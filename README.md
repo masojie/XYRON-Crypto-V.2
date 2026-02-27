@@ -20,13 +20,12 @@ XYRON V.2 telah di-upgrade dengan sistem Hybrid yang menggabungkan tiga bahasa p
 * **Nexus Community Engine (NCE):** Validasi berbasis keberadaan komunitas dan inovasi sosial.
 
 ### 3. 🧠 API Gateway & Community Engine (Node.js)
-* **Triple-Engine Validation:** Sinkronisasi antara NLV (Nizam Logic-Quantum), PEP (Parallel Echo-Pulse), dan NCE.
+* **Triple-Engine Validation:** Sinkronisasi antara Logic-Quantum Verification (LQV), Parallel Echo-Pulse (PEP), dan Nexus Community Engine (NCE).
 * **Heartbeat System:** Interval detak jantung sistem setiap 180 detik untuk cetak blok/transaksi.
 * **Supply Management:** Pengaturan total supply 12,6 Juta XYR secara presisi.
+* 
 
----
-
-## 📁 Struktur Folder & Kabel Logika
+Logika
 * `core-rust/`: Menangani keamanan dan enkripsi X11-Nano.
 * `stream-go/`: Jembatan data berkecepatan tinggi.
 * `server-node/`: Gerbang utama API dan logika komunitas.
