@@ -149,3 +149,65 @@ curl -X POST http://localhost:3000/xyron/validate \
 
 # View blocks
 curl http://localhost:3000/blocks
+
+XYRON-TECHNOLOGY/
+├── .replit              # Replit configuration
+├── replit.nix           # Nix package configuration
+├── Makefile             # Build automation
+├── start.sh             # Service starter
+├── README.md            # This file
+├── core-rust/           # Rust Core Engine
+│   ├── Cargo.toml       # Rust dependencies
+│   └── src/             # Rust source files
+├── stream-go/           # Go Nexus Stream
+│   ├── go.mod           # Go modules
+│   └── main.go          # Go implementation
+├── server-node/         # Node.js Gateway
+│   ├── package.json     # Node dependencies
+│   ├── server.js        # Main server
+│   └── engine/          # Tokenomics engine
+├── history/             # Permanent block storage
+├── logs/                # Log files
+└── tests/               # Integration tests
+
+🔒 Security Features
+
+· X11-Nano Shield: 15-layer encryption with 11 different hash algorithms
+· LQV: Logic-Quantum Verification for node authentication
+· Unique Signatures: Every validation gets a unique X11 signature
+· Unix Sockets: Internal communication with <500μs latency
+· SMS Encryption: Messages encrypted before permanent storage
+
+⏱️ Heartbeat Logic
+
+```javascript
+// Every 180 seconds
+if (hasActivity) {
+    // Mint block with 36 XYR reward
+    console.log("Status: PIP");
+} else {
+    // Mint empty block
+    console.log("Status: PIP PIP");
+}
+```
+
+📝 Log Examples
+
+```
+[CORE-RUST] [INFO] Node wallet_123 processed | Time: 342μs | Signature: X11_VAL_... | Status: PIP
+[NEXUS-GO] [INFO] Wallet wallet_123 validated in 412μs | Signature: X11_VAL_... | Status: PIP
+[API-NODE] [INFO] Wallet wallet_123 validated in 856ms | Signature: X11_VAL_... | Status: PIP
+[HEARTBEAT] [INFO] Block #150 Minted | Validators: 5 | SMS: 2 | Status: PIP
+```
+
+📄 License
+
+Copyright © 2026 XYRON Technology. All rights reserved.
+
+---
+
+Status: PIP - XYRON TECHNOLOGY V.2 READY FOR DEPLOYMENT 🚀
+
+```
+
+---
