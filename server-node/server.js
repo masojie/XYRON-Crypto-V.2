@@ -11,7 +11,6 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 const crypto = require('crypto');
 const fs = require('fs');
-const path = require('path');
 const winston = require('winston');
 
 // Local modules
