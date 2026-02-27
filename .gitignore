@@ -1,0 +1,25 @@
+# --- Saringan Node.js ---
+node_modules/
+npm-debug.log
+package-lock.json
+
+# --- Saringan Rust ---
+# Folder target ini wajib dibuang karena sangat berat
+target/
+**/*.rs.bk
+
+# --- Saringan Go ---
+bin/
+pkg/
+
+# --- Saringan XYRON System ---
+# Jangan simpan kabel socket ke GitHub
+*.sock
+# Jangan simpan catatan transaksi lama (biar history bersih)
+history/*.json
+logs/*.log
+
+# --- Saringan Replit ---
+.replit
+replit.nix
+
