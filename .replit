@@ -1,12 +1,22 @@
+
+---
+
+# 📁 FILE 2: .replit (ROOT)
+```replit
 run = "bash start.sh"
 
 [env]
+XYRON_MODE = "production"
+NODE_ENV = "production"
+RUST_LOG = "info"
+GO111MODULE = "on"
 PORT = "3000"
 RUST_SOCKET = "/tmp/xyron-core.sock"
 GO_SOCKET = "/tmp/xyron-go.sock"
 BLOCK_TIME = "180000"
 MAX_SUPPLY = "12614400"
 INITIAL_REWARD = "36"
+HALVING_INTERVAL = "175200"
 
 [packager]
 language = "nodejs"
