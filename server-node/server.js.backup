@@ -125,7 +125,6 @@ class GoBridge {
 // INISIALISASI
 // ============================================================================
 const app = express();
-app.use(express.static('public'));
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: { origin: "*" },

@@ -1,0 +1,20 @@
+{
+  "header": {
+    "block": 15,
+    "timestamp": "2026-03-07T04:18:10.323Z",
+    "reward": 0,
+    "validatorCount": 0,
+    "hasActivity": false,
+    "supply": 0,
+    "maxSupply": 12614400
+  },
+  "rewards": {
+    "total": 0,
+    "perValidator": 0,
+    "validators": []
+  },
+  "community_vault": {
+    "smsCount": 0,
+    "messages": []
+  }
+}
