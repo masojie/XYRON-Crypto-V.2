@@ -7,6 +7,9 @@
  * - Reward Schedule
  * - Fee Distribution
  * - Confirmations
+ * 
+ * Version: 2.0.0 (Final Tokenomics)
+ * Status: PIP
  */
 
 const express = require('express');
@@ -79,6 +82,25 @@ app.get('/api/tokenomics/reward/:block', (req, res) => {
     });
 });
 
+app.get('/api/tokenomics/supply', (req, res) => {
+    const tokenomics = new Tokenomics();
+    const currentBlock = parseInt(req.query.block) || 0;
+    
+    res.json({
+        status: 'PIP',
+        data: {
+            maxSupply: tokenomics.config.maxSupply,
+            maxSupplyFormatted: `${tokenomics.config.maxSupply.toLocaleString()} XYR`,
+            burnedSupply: tokenomics.config.maxSupply * tokenomics.config.genesisBurn,
+            lockedSupply: tokenomics.config.maxSupply * tokenomics.config.genesisLock,
+            finalSupply: tokenomics.getFinalSupply(),
+            mineableSupply: tokenomics.getMineableSupply(),
+            minedSupply: tokenomics.getMinedSupply ? tokenomics.getMinedSupply(currentBlock) : 0,
+            remainingSupply: tokenomics.getRemainingSupply ? tokenomics.getRemainingSupply(currentBlock) : 0,
+        },
+    });
+});
+
 // ============= CURRENCY ENDPOINTS =============
 
 app.get('/api/currency', (req, res) => {
@@ -92,35 +114,38 @@ app.get('/api/currency/convert', (req, res) => {
     const { amount, from, to } = req.query;
     
     if (!amount) {
-        return res.json({
+        return res.status(400).json({
             status: 'PIP PIP',
             error: 'Amount required',
         });
     }
     
-    const xyr = parseFloat(amount);
-    const fromUnit = from || 'xyr';
-    const toUnit = to || 'niz';
+    const numAmount = parseFloat(amount);
+    const fromUnit = from?.toLowerCase() || 'xyr';
+    const toUnit = to?.toLowerCase() || 'niz';
     
     let result;
+    let resultFormatted;
+    
     if (fromUnit === 'xyr' && toUnit === 'niz') {
-        result = Currency.toNiz(xyr);
+        result = Currency.toNiz(numAmount);
+        resultFormatted = Currency.formatNiz(result);
     } else if (fromUnit === 'niz' && toUnit === 'xyr') {
-        result = Currency.toXyr(xyr);
+        result = Currency.toXyr(numAmount);
+        resultFormatted = Currency.formatXyr(result);
     } else {
-        result = xyr;
+        result = numAmount;
+        resultFormatted = Currency.format(numAmount);
     }
     
     res.json({
         status: 'PIP',
         data: {
-            input: { amount: xyr, unit: fromUnit },
+            input: { amount: numAmount, unit: fromUnit },
             output: {
                 value: result,
                 unit: toUnit,
-                formatted: toUnit === 'niz' 
-                    ? Currency.formatNiz(result)
-                    : Currency.formatXyr(result),
+                formatted: resultFormatted,
             },
         },
     });
@@ -130,15 +155,27 @@ app.get('/api/currency/format/:amount', (req, res) => {
     const amount = parseFloat(req.params.amount);
     const { unit } = req.query;
     
-    res.json({
+    const response = {
         status: 'PIP',
         data: {
             amount,
             xyr: Currency.formatXyr(amount),
             niz: Currency.formatNiz(Currency.toNiz(amount)),
             auto: Currency.format(amount),
-            ...(unit === 'niz' ? { nizOnly: Currency.formatNiz(amount) } : {}),
         },
+    };
+    
+    if (unit === 'niz') {
+        response.data.nizOnly = Currency.formatNiz(amount);
+    }
+    
+    res.json(response);
+});
+
+app.get('/api/currency/examples', (req, res) => {
+    res.json({
+        status: 'PIP',
+        data: Currency.getExamples(),
     });
 });
 
@@ -151,7 +188,6 @@ app.get('/api/rewards', (req, res) => {
         status: 'PIP',
         data: {
             schedule: RewardSchedule.getScheduleDisplay(years),
-            nextHalving: RewardSchedule.getNextHalving(0),
             summary: RewardSchedule.getSummary(),
         },
     });
@@ -170,13 +206,35 @@ app.get('/api/rewards/halving', (req, res) => {
     });
 });
 
+app.get('/api/rewards/block/:block', (req, res) => {
+    const block = parseInt(req.params.block) || 0;
+    const tokenomics = new Tokenomics();
+    
+    const reward = tokenomics.getRewardByBlock(block);
+    const year = Math.floor(block / tokenomics.config.blocksPerYear) + 1;
+    const isHalving = RewardSchedule.isHalvingBlock ? RewardSchedule.isHalvingBlock(block) : null;
+    
+    res.json({
+        status: 'PIP',
+        data: {
+            block,
+            year,
+            reward,
+            rewardNiz: tokenomics.toNiz(reward),
+            rewardFormatted: tokenomics.formatAmount(reward),
+            isHalving: !!isHalving,
+            halvingInfo: isHalving,
+        },
+    });
+});
+
 // ============= FEE DISTRIBUTION ENDPOINTS =============
 
 app.post('/api/fees/distribute', (req, res) => {
     const { transactions, blockNumber } = req.body;
     
     if (!transactions || !Array.isArray(transactions)) {
-        return res.json({
+        return res.status(400).json({
             status: 'PIP PIP',
             error: 'Invalid transactions data',
         });
@@ -193,13 +251,38 @@ app.post('/api/fees/distribute', (req, res) => {
     });
 });
 
+app.post('/api/fees/calculate', (req, res) => {
+    const { type, smsContent, priority, amount } = req.body;
+    
+    const tx = {
+        type: type || 'standard',
+        smsContent,
+        priority: priority || 'normal',
+        amount: amount || 0,
+    };
+    
+    const fee = FeeDistribution.calculateTransactionFee(tx);
+    
+    res.json({
+        status: 'PIP',
+        data: {
+            transaction: tx,
+            fee,
+            feeNiz: Math.floor(fee * 100_000_000),
+            feeFormatted: fee < 0.001 
+                ? `${Math.floor(fee * 100_000_000).toLocaleString()} nIZ`
+                : `${fee.toFixed(6)} XYR`,
+        },
+    });
+});
+
 app.post('/api/fees/pc-miner', (req, res) => {
     const { hashrate, totalHashrate, pcPool } = req.body;
     
     if (!hashrate || !totalHashrate || !pcPool) {
-        return res.json({
+        return res.status(400).json({
             status: 'PIP PIP',
-            error: 'Missing parameters',
+            error: 'Missing parameters: hashrate, totalHashrate, pcPool',
         });
     }
     
@@ -219,9 +302,9 @@ app.post('/api/fees/hp-miner', (req, res) => {
     const { activity, totalScore, hpPool } = req.body;
     
     if (!activity || !totalScore || !hpPool) {
-        return res.json({
+        return res.status(400).json({
             status: 'PIP PIP',
-            error: 'Missing parameters',
+            error: 'Missing parameters: activity, totalScore, hpPool',
         });
     }
     
@@ -238,13 +321,26 @@ app.post('/api/fees/hp-miner', (req, res) => {
 });
 
 app.get('/api/fees/stats', (req, res) => {
+    const date = req.query.date;
+    
     res.json({
         status: 'PIP',
         data: {
             rates: FeeDistribution.getFeeRates(),
-            dailyStats: FeeDistribution.getDailyStats(),
+            dailyStats: date ? FeeDistribution.getDailyStats(date) : FeeDistribution.getDailyStats(),
             weeklyStats: FeeDistribution.getWeeklyStats(),
             summary: FeeDistribution.getSummary(),
+        },
+    });
+});
+
+app.get('/api/fees/info', (req, res) => {
+    res.json({
+        status: 'PIP',
+        data: {
+            pcShare: `${FeeDistribution.PC_SHARE * 100}%`,
+            hpShare: `${FeeDistribution.HP_SHARE * 100}%`,
+            feeRates: FeeDistribution.feeRates,
         },
     });
 });
@@ -255,6 +351,13 @@ app.get('/api/confirmations/:txBlock', (req, res) => {
     const txBlock = parseInt(req.params.txBlock);
     const currentBlock = parseInt(req.query.current) || txBlock + 5;
     const amount = parseFloat(req.query.amount) || 50;
+    
+    if (isNaN(txBlock)) {
+        return res.status(400).json({
+            status: 'PIP PIP',
+            error: 'Invalid txBlock',
+        });
+    }
     
     const status = Confirmations.getStatus(txBlock, currentBlock, amount);
     
@@ -288,7 +391,7 @@ app.post('/api/confirmations/validate-block', (req, res) => {
     const { prevTimestamp, currTimestamp } = req.body;
     
     if (!prevTimestamp || !currTimestamp) {
-        return res.json({
+        return res.status(400).json({
             status: 'PIP PIP',
             error: 'Missing timestamps',
         });
@@ -302,11 +405,21 @@ app.post('/api/confirmations/validate-block', (req, res) => {
     });
 });
 
+app.get('/api/confirmations/estimate', (req, res) => {
+    const target = parseInt(req.query.target) || 3;
+    const current = parseInt(req.query.current) || 0;
+    
+    res.json({
+        status: 'PIP',
+        data: Confirmations.estimateTime(target, current),
+    });
+});
+
 // ============= STATS ENDPOINTS =============
 
 app.get('/api/stats', (req, res) => {
     const tokenomics = new Tokenomics();
-    const currentBlock = 10000; // Mock, nanti ambil dari blockchain
+    const currentBlock = parseInt(req.query.block) || 10000; // Mock, nanti ambil dari blockchain
     
     res.json({
         status: 'PIP',
@@ -315,9 +428,11 @@ app.get('/api/stats', (req, res) => {
             timestamp: new Date().toISOString(),
             tokenomics: {
                 maxSupply: tokenomics.config.maxSupply,
+                maxSupplyFormatted: `${tokenomics.config.maxSupply.toLocaleString()} XYR`,
                 finalSupply: tokenomics.getFinalSupply(),
                 mineableSupply: tokenomics.getMineableSupply(),
                 currentReward: tokenomics.getRewardByBlock(currentBlock),
+                currentRewardFormatted: tokenomics.formatAmount(tokenomics.getRewardByBlock(currentBlock)),
             },
             currency: {
                 ratio: Currency.ratio,
@@ -330,8 +445,30 @@ app.get('/api/stats', (req, res) => {
             },
             confirmations: {
                 blockTime: Confirmations.BLOCK_TIME,
+                blockTimeFormatted: '3 menit',
                 defaultLevel: '3 blocks (9 menit)',
+                defaultLevelObj: Confirmations.LEVELS.STANDARD,
             },
+        },
+    });
+});
+
+app.get('/api/stats/miners', (req, res) => {
+    const weeklyStats = FeeDistribution.getWeeklyStats();
+    
+    res.json({
+        status: 'PIP',
+        data: {
+            distribution: {
+                pc: `${FeeDistribution.PC_SHARE * 100}%`,
+                hp: `${FeeDistribution.HP_SHARE * 100}%`,
+            },
+            weeklyFees: weeklyStats,
+            totalFees: weeklyStats.reduce((sum, day) => sum + (day?.totalFees || 0), 0),
+            pcPool: weeklyStats.reduce((sum, day) => sum + (day?.pcPool || 0), 0),
+            hpPool: weeklyStats.reduce((sum, day) => sum + (day?.hpPool || 0), 0),
+            averageDailyFees: weeklyStats.length ? 
+                weeklyStats.reduce((sum, day) => sum + (day?.totalFees || 0), 0) / weeklyStats.length : 0,
         },
     });
 });
@@ -343,25 +480,115 @@ app.get('/', (req, res) => {
         name: 'XYRON API Gateway',
         version: '2.0.0',
         status: 'PIP',
+        description: 'XYRON Blockchain API with final tokenomics',
+        documentation: '/api/docs',
         endpoints: [
             '/health',
             '/api/tokenomics',
             '/api/tokenomics/reward/:block',
+            '/api/tokenomics/supply',
             '/api/currency',
             '/api/currency/convert',
             '/api/currency/format/:amount',
+            '/api/currency/examples',
             '/api/rewards',
             '/api/rewards/halving',
+            '/api/rewards/block/:block',
+            '/api/fees/calculate',
             '/api/fees/distribute',
             '/api/fees/pc-miner',
             '/api/fees/hp-miner',
             '/api/fees/stats',
+            '/api/fees/info',
             '/api/confirmations/:txBlock',
             '/api/confirmations/recommend/:amount',
             '/api/confirmations/info',
             '/api/confirmations/validate-block',
+            '/api/confirmations/estimate',
             '/api/stats',
+            '/api/stats/miners',
         ],
+    });
+});
+
+// ============= SIMPLE API DOCS =============
+
+app.get('/api/docs', (req, res) => {
+    res.send(`
+        <html>
+        <head>
+            <title>XYRON API Documentation</title>
+            <style>
+                body { font-family: Arial; padding: 20px; background: #0D0D18; color: #F0F0FF; }
+                h1 { color: #D4AF37; }
+                h2 { color: #2563eb; margin-top: 30px; }
+                code { background: #1E1E3A; padding: 2px 6px; border-radius: 4px; color: #3b82f6; }
+                pre { background: #1E1E3A; padding: 10px; border-radius: 8px; overflow-x: auto; }
+                .endpoint { margin-bottom: 20px; border-bottom: 1px solid #1E1E3A; padding-bottom: 20px; }
+                .method { color: #10B981; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <h1>🚀 XYRON API DOCUMENTATION</h1>
+            <p>Version: 2.0.0 | Status: PIP</p>
+            
+            <h2>📦 Tokenomics</h2>
+            <div class="endpoint">
+                <p><span class="method">GET</span> <code>/api/tokenomics</code> - Info tokenomics lengkap</p>
+                <p><span class="method">GET</span> <code>/api/tokenomics/reward/:block</code> - Reward di block tertentu</p>
+                <p><span class="method">GET</span> <code>/api/tokenomics/supply</code> - Info supply</p>
+            </div>
+            
+            <h2>🪙 Currency</h2>
+            <div class="endpoint">
+                <p><span class="method">GET</span> <code>/api/currency</code> - Info currency</p>
+                <p><span class="method">GET</span> <code>/api/currency/convert?amount=1&from=xyr&to=niz</code> - Konversi XYR/nIZ</p>
+                <p><span class="method">GET</span> <code>/api/currency/format/:amount</code> - Format amount</p>
+            </div>
+            
+            <h2>📅 Rewards</h2>
+            <div class="endpoint">
+                <p><span class="method">GET</span> <code>/api/rewards?years=10</code> - Jadwal reward</p>
+                <p><span class="method">GET</span> <code>/api/rewards/halving?block=0</code> - Info halving</p>
+            </div>
+            
+            <h2>💰 Fees</h2>
+            <div class="endpoint">
+                <p><span class="method">POST</span> <code>/api/fees/calculate</code> - Hitung fee transaksi</p>
+                <p><span class="method">GET</span> <code>/api/fees/info</code> - Info fee distribution (60/40)</p>
+            </div>
+            
+            <h2>🔒 Confirmations</h2>
+            <div class="endpoint">
+                <p><span class="method">GET</span> <code>/api/confirmations/:txBlock?current=1000&amount=50</code> - Status konfirmasi</p>
+                <p><span class="method">GET</span> <code>/api/confirmations/recommend/:amount</code> - Rekomendasi konfirmasi</p>
+            </div>
+            
+            <h2>📊 Stats</h2>
+            <div class="endpoint">
+                <p><span class="method">GET</span> <code>/api/stats</code> - Statistik network</p>
+                <p><span class="method">GET</span> <code>/health</code> - Health check</p>
+            </div>
+        </body>
+        </html>
+    `);
+});
+
+// ============= ERROR HANDLER =============
+
+app.use((req, res) => {
+    res.status(404).json({
+        status: 'PIP PIP',
+        error: 'Endpoint not found',
+    });
+});
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        status: 'PIP PIP PIP',
+        error: 'Internal server error',
+        message: err.message,
     });
 });
 
@@ -390,3 +617,5 @@ app.listen(PORT, () => {
 ╚══════════════════════════════════════════════════════════╝
     `);
 });
+
+module.exports = app;
