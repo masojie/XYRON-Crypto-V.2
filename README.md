@@ -439,4 +439,10 @@ Status: PIP - XYRON TECHNOLOGY V.2 READY FOR DEPLOYMENT 🚀
 
 ```
 
+## 📁 FILE LAINNYA
+
+- [`tokenomics-final.js`](tokenomics-final.js) - Kalkulator tokenomik XYRON
+- [`docs/WHITEPAPER.md`](docs/WHITEPAPER.md) - Whitepaper lengkap
+- [`docs/CONFIRMATIONS.md`](docs/CONFIRMATIONS.md) - Panduan konfirmasi transaksi
+
 ---
