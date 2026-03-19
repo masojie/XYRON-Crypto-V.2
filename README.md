@@ -199,6 +199,16 @@ Examples:
 
 ```
 
+## ⚡ PERFORMANCE
+
+- **Internal Socket Latency:** <0.5 detik (komunikasi Rust-Go-Node)
+- **Block Time:** 3 menit (produksi block)
+- **Transaction Confirmation:** 
+  - Micro: 3 menit (1 block)
+  - Standard: 9 menit (3 blocks) ✅ DEFAULT
+  - Exchange: 18 menit (6 blocks)
+  - Institutional: 36 menit (12 blocks)
+
 ### Recommendation by Amount
 
 | Amount | Recommended Confirmations | Wait Time |
