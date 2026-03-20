@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>XYRON Explorer v2 — X11-Nano Blockchain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#080810;color:#F0F0FF;font-family:'Inter',sans-serif;}
+#sidebar{width:240px;position:fixed;left:0;top:0;bottom:0;background:#0D0D1A;border-right:1px solid #1E1E3A;}
+#main{margin-left:240px;min-height:100vh;}
+.topbar{height:56px;background:#0D0D1A;border-bottom:1px solid #1E1E3A;display:flex;align-items:center;padding:0 20px;}
+#content{padding:24px;}
+.card{background:#111124;border:1px solid #1E1E3A;border-radius:12px;padding:20px;margin-bottom:20px;}
+.stat-card{background:#111124;border:1px solid #1E1E3A;border-radius:12px;padding:20px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-family:'JetBrains Mono',monospace;}
+.badge-pip{background:rgba(37,99,235,.12);color:#60a5fa;border:1px solid rgba(37,99,235,.3);}
+.stat-val{font-size:24px;font-weight:900;}
+.stat-label{font-size:11px;color:#6b7280;margin-bottom:8px;}
+.text-gold{color:#D4AF37;}
+.text-blue{color:#60a5fa;}
+.text-green{color:#10B981;}
+.mono{font-family:'JetBrains Mono',monospace;}
+table{width:100%;border-collapse:collapse;}
+th{padding:10px;text-align:left;font-size:10px;color:#6b7280;border-bottom:1px solid #1E1E3A;}
+td{padding:10px;font-size:13px;border-bottom:1px solid #1E1E3A;}
+.page{display:none;}
+.page.active{display:block;}
+.nav-item{padding:10px 12px;cursor:pointer;color:#9CA3AF;}
+.nav-item:hover{color:#fff;}
+.nav-item.active{color:#60a5fa;background:rgba(37,99,235,.1);}
+.live-dot{width:8px;height:8px;background:#10B981;border-radius:50%;display:inline-block;}
+#search-input{flex:1;max-width:480px;background:#161628;border:1px solid #1E1E3A;border-radius:8px;padding:8px 14px;color:#fff;}
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <div style="padding:20px;border-bottom:1px solid #1E1E3A;">
+    <div style="font-size:18px;font-weight:800;">XY<span style="color:#D4AF37;">RON</span></div>
+    <div style="font-size:10px;color:#6b7280;">Explorer v2</div>
+  </div>
+  <div style="padding:12px;">
+    <div class="nav-item active" onclick="nav('dashboard')">Dashboard</div>
+    <div class="nav-item" onclick="nav('blocks')">Blocks</div>
+    <div class="nav-item" onclick="nav('transactions')">Transactions</div>
+    <div class="nav-item" onclick="nav('validators')">Validators</div>
+    <div class="nav-item" onclick="nav('wallet')">Wallet</div>
+    <div class="nav-item" onclick="nav('tokenomics')">Tokenomics</div>
+  </div>
+</div>
+
+<div id="main">
+  <div class="topbar">
+    <input id="search-input" type="text" placeholder="Search block, tx hash, address… (press Enter)" onkeydown="handleSearch(event)">
+    <div style="display:flex;align-items:center;gap:12px;margin-left:auto;">
+      <div class="live-dot"></div>
+      <span>Live</span>
+    </div>
+  </div>
+  <div id="content">
+    <div id="page-dashboard" class="page active">
+      <h1 style="margin-bottom:20px;">XYRON Dashboard</h1>
+      <div class="grid-4" id="dash-stats">
+        <div class="stat-card"><div class="stat-label">Current Block</div><div class="stat-val text-blue" id="s-block">—</div></div>
+        <div class="stat-card"><div class="stat-label">Active Validators</div><div class="stat-val text-green" id="s-validators">—</div></div>
+        <div class="stat-card"><div class="stat-label">XYR Price</div><div class="stat-val text-gold" id="s-price">—</div></div>
+        <div class="stat-card"><div class="stat-label">Max Supply</div><div class="stat-val">12,614,400</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><h3>Latest Blocks</h3><div class="table-wrap">\n<table><thead><tr><th>Block #</th><th>Age</th><th>Validator</th><th>Txns</th></tr></thead><tbody id="dash-blocks"></tbody></table></div></div>
+        <div class="card"><h3>Latest Transactions</h3><div class="table-wrap">\n<table><thead><tr><th>Hash</th><th>Amount</th><th>Status</th><th>Age</th></tr></thead><tbody id="dash-txs"></tbody></table></div></div>
+      </div>
+    </div>
+    <div id="page-blocks" class="page"><h1>Block Explorer</h1><div class="card"><div class="table-wrap">\n<table><thead><tr><th>Block #</th><th>Hash</th><th>Validator</th><th>Txns</th><th>Reward</th></tr></thead><tbody id="blocks-list"></tbody></table></div></div></div>
+    <div id="page-transactions" class="page"><h1>Transactions</h1><div class="card"><div class="table-wrap">\n<table><thead><tr><th>Hash</th><th>From</th><th>To</th><th>Amount</th><th>Status</th></tr></thead><tbody id="txs-list"></tbody></table></div></div></div>
+    <div id="page-validators" class="page"><h1>Validators</h1><div class="card"><div id="validators-list"></div></div></div>
+    <div id="page-wallet" class="page"><h1>X11-Nano Wallet</h1><div class="card"><p>Connect your wallet to use XYRON</p><button onclick="alert('Coming soon')" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;">Connect Wallet</button></div></div>
+    <div id="page-tokenomics" class="page"><h1>Tokenomics</h1><div class="card"><p>Max Supply: 12,614,400 XYR</p><p>Block Reward: 36 XYR → halving setiap 1 tahun</p><p>1 XYR = 100,000,000 nIZ</p></div></div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://congenial-succotash-pjqwpjxj4456h5gw-3000.app.github.dev';
+let blocks = [];
+let txs = [];
+
+function nav(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if(page === 'dashboard') renderDashboard();
+  if(page === 'blocks') renderBlocks();
+  if(page === 'transactions') renderTransactions();
+}
+
+async function fetchData() {
+  try {
+    const health = await fetch(API_BASE + '/health').then(r => r.json());
+    document.getElementById('s-block').innerText = health.block || '—';
+    document.getElementById('s-validators').innerText = health.validators || '—';
+    document.getElementById('s-price').innerText = '$0.0847';
+  } catch(e) { console.log('API error'); }
+  
+  try {
+    const b = await fetch(API_BASE + '/blocks?limit=10').then(r => r.json());
+    blocks = Array.isArray(b) ? b : (b.blocks || []);
+  } catch(e) { blocks = []; }
+  
+  try {
+    const t = await fetch(API_BASE + '/transactions?limit=10').then(r => r.json());
+    txs = Array.isArray(t) ? t : (t.transactions || []);
+  } catch(e) { txs = []; }
+}
+
+function renderDashboard() {
+  document.getElementById('dash-blocks').innerHTML = blocks.slice(0,5).map(b => `
+    <tr><td>#${b.number || '—'}</td><td>${b.age || '—'}</td><td>${b.validator || '—'}</td><td>${b.txCount || 0}</td></tr>
+  `).join('');
+  document.getElementById('dash-txs').innerHTML = txs.slice(0,5).map(t => `
+    <tr><td class="mono">${(t.hash || '').slice(0,12)}...</td><td>${t.amount || 0} XYR</td><td><span class="badge badge-pip">${t.status || 'PIP'}</span></td><td>${t.age || '—'}</td></tr>
+  `).join('');
+}
+
+function renderBlocks() {
+  document.getElementById('blocks-list').innerHTML = blocks.map(b => `
+    <tr><td>#${b.number}</td><td class="mono">${(b.hash || '').slice(0,16)}...</td><td>${b.validator}</td><td>${b.txCount}</td><td>${b.reward || 36} XYR</td></tr>
+  `).join('');
+}
+
+function renderTransactions() {
+  document.getElementById('txs-list').innerHTML = txs.map(t => `
+    <tr><td class="mono">${(t.hash || '').slice(0,12)}...</td><td class="mono">${(t.from || '').slice(0,10)}...</td><td class="mono">${(t.to || '').slice(0,10)}...</td><td>${t.amount || 0} XYR</td><td><span class="badge badge-pip">${t.status || 'PIP'}</span></td></tr>
+  `).join('');
+}
+
+function handleSearch(e) {
+  if(e.key !== 'Enter') return;
+  const q = e.target.value.trim();
+  if(!q) return;
+  const block = blocks.find(b => b.number == q);
+  if(block) { alert('Block found: #' + block.number); e.target.value = ''; return; }
+  alert('No results found');
+}
+
+fetchData().then(() => { renderDashboard(); });
+</script>
+</body>
+  </html>
