@@ -1,0 +1,66 @@
+const TelegramBot = 
+require('node-telegram-bot-api'); 
+const axios = 
+require('axios'); 
+const TOKEN = 
+'8390504344:AAGjUIy3bUUPZ_B8yJsg-eaVD0QOGkbJBCs'; 
+const XYRON_URL = 
+'https://congenial-succotash-pjqwpjxj4456h5gw-3000.app.github.dev'; 
+const bot = new 
+TelegramBot(TOKEN, 
+{ polling: true }); 
+const mainMenu = {
+    reply_markup: { 
+        keyboard: 
+        [['📊 
+        STATUS', 
+        '📦 
+        BLOCKS'], 
+        ['👛 
+        WALLET', 
+        '➕ BUAT 
+        WALLET']], 
+        resize_keyboard: 
+        true
+    }
+};
+bot.onText(/\/start/, 
+(msg) => {
+    bot.sendMessage(msg.chat.id, 
+    '🚀 XYRON BOT 
+    AKTIF', 
+    mainMenu);
+});
+bot.on('message', 
+async (msg) => {
+    const chatId = 
+    msg.chat.id; 
+    const text = 
+    msg.text;
+    
+    if (text === 
+    '📊 STATUS') {
+        try { const 
+            res = 
+            await 
+            axios.get(`${XYRON_URL}/health`); 
+            bot.sendMessage(chatId, 
+            `📊 
+            Status: 
+            ${res.data.message}\nBlock: 
+            #${res.data.block}`, 
+            mainMenu);
+        } catch (e) 
+        } {
+            bot.sendMessage(chatId, 
+            '❌ 
+            Gagal 
+            konek', 
+            mainMenu);
+        }
+    }
+});
+console.log('✅ Bot siap!');
+
+
+

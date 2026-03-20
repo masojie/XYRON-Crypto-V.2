@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "axios": "^1.13.6",
+    "node-telegram-bot-api": "^0.67.0"
+  },
+  "name": "xyron-crypto-v.2",
+  "version": "1.0.0",
+  "description": "**Developer:** M Fauzi Nizam - Blitar, East Java, Indonesia   **Status:** PIP (Validation Success) | PIP PIP (System Idle)",
+  "main": "ecosystem.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/masojie/XYRON-Crypto-V.2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/masojie/XYRON-Crypto-V.2/issues"
+  },
+  "homepage": "https://github.com/masojie/XYRON-Crypto-V.2#readme"
+}
