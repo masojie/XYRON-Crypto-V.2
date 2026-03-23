@@ -1,0 +1,18 @@
+[package]
+name = "xyron_wallet"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+bip39 = "2.0"
+secp256k1 = { version = "0.27", features = ["rand", "recovery"] }
+sha2 = "0.10"
+rand = "0.8"
+bs58 = "0.5"
+ripemd = "0.1"
+
+[dev-dependencies]
+hex = "0.4"
