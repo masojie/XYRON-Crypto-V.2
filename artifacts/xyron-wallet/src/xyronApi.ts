@@ -6,7 +6,7 @@
 // Fallback: local seed data when node is offline
 // ═══════════════════════════════════════════════════════════════════
 
-const DEFAULT_NODE_URL = "https://congenial-succotash-pjqwpjxj4456h5gw-3000.app.github.dev";
+const DEFAULT_NODE_URL = "https://xyronblockchain.replit.app";
 const TIMEOUT_MS = 6000;
 
 export interface ApiBlock {
