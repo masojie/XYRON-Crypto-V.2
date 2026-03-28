@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { XyronAPI, normalizeBlocksResponse, mapApiTx, getNodeUrl, setNodeUrl } from "./xyronApi";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Page = "home" | "history" | "assets" | "profile" | "send" | "exchange" | "detail" | "mining" | "army";
@@ -152,13 +153,14 @@ function BottomNav({ tab, onSwitch }: { tab: Page; onSwitch: (p: Page) => void }
 }
 
 // ── Home Page ─────────────────────────────────────────────────────────────────
-function HomePage({ txs, onNav, dark, onToggleDark, onShowTx, nodeStatus }: {
+function HomePage({ txs, onNav, dark, onToggleDark, onShowTx, nodeStatus, onOpenNodeConfig }: {
   txs: Tx[];
   onNav: (p: Page) => void;
   dark: boolean;
   onToggleDark: () => void;
   onShowTx: (tx: Tx) => void;
   nodeStatus: "live" | "offline" | "connecting";
+  onOpenNodeConfig: () => void;
 }) {
   const statusTxt = nodeStatus === "live" ? "LIVE" : nodeStatus === "offline" ? "LOCAL" : "SYNC…";
   const statusColor = nodeStatus === "live" ? "var(--pip)" : nodeStatus === "offline" ? "var(--pip2)" : "var(--t3)";
@@ -177,6 +179,9 @@ function HomePage({ txs, onNav, dark, onToggleDark, onShowTx, nodeStatus }: {
               ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>
               : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" strokeWidth="2" strokeLinecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
             }
+          </button>
+          <button onClick={onOpenNodeConfig} title="Node settings" style={{ width: 30, height: 30, borderRadius: "50%", border: "1px solid var(--b1)", background: "var(--off)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" /></svg>
           </button>
           <div className="net-pill">MAINNET · V.2</div>
         </div>
@@ -282,9 +287,9 @@ function ExplorerPage({ blocks, txs }: { blocks: Block[]; txs: Tx[] }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 6, margin: "10px 22px 0", flexShrink: 0 }}>
         {[
-          { label: "BLOCKS", val: blocks[0]?.num ?? 59, color: "var(--t1)" },
+          { label: "BLOCKS", val: blocks[0]?.num ?? "—", color: "var(--t1)" },
           { label: "TXs", val: txs.length, color: "var(--t1)" },
-          { label: "MINTED", val: "2,124", color: "var(--t1)" },
+          { label: "MINTED", val: blocks.reduce((s, b) => s + b.reward, 0).toLocaleString(), color: "var(--t1)" },
           { label: "NEXT", val: `${heartbeat}s`, color: "var(--pip2)" },
         ].map(({ label, val, color }) => (
           <div key={label} style={{ background: "var(--off)", border: "1px solid var(--b1)", borderRadius: 8, padding: "8px 6px", textAlign: "center" }}>
@@ -330,20 +335,23 @@ function ExplorerPage({ blocks, txs }: { blocks: Block[]; txs: Tx[] }) {
 }
 
 // ── Send Page ─────────────────────────────────────────────────────────────────
-function SendPage({ onBack, onToast }: { onBack: () => void; onToast: (m: string) => void }) {
+function SendPage({ onBack, onToast, onValidate }: { onBack: () => void; onToast: (m: string) => void; onValidate: (w: string, sms?: string) => Promise<Tx | null> }) {
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
-  function handleSend() {
-    if (!to || !amount) { onToast("Fill all fields"); return; }
+  async function handleSend() {
+    if (!to || !amount) { onToast("Isi semua field"); return; }
     setBusy(true);
-    setTimeout(() => {
-      setBusy(false);
-      onToast("PIP — Transaction buffered");
-      onBack();
-    }, 1800);
+    const live = await onValidate(to, msg || undefined);
+    setBusy(false);
+    if (live) {
+      onToast("PIP — TX terkirim via node XYRON (" + live.txId + ")");
+    } else {
+      onToast("PIP — Transaction buffered (offline)");
+    }
+    onBack();
   }
 
   return (
@@ -390,7 +398,7 @@ function SendPage({ onBack, onToast }: { onBack: () => void; onToast: (m: string
 }
 
 // ── Exchange Page ─────────────────────────────────────────────────────────────
-function ExchangePage({ onBack, onToast }: { onBack: () => void; onToast: (m: string) => void }) {
+function ExchangePage({ onBack, onToast, onValidate }: { onBack: () => void; onToast: (m: string) => void; onValidate: (w: string, sms?: string) => Promise<Tx | null> }) {
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
   const [fromToken, setFromToken] = useState("XYR");
@@ -401,14 +409,17 @@ function ExchangePage({ onBack, onToast }: { onBack: () => void; onToast: (m: st
     setToToken(t => t === "XYR" ? "USDT" : "XYR");
   }
 
-  function handleExchange() {
-    if (!amount) { onToast("Enter an amount"); return; }
+  async function handleExchange() {
+    if (!amount) { onToast("Masukkan jumlah"); return; }
     setBusy(true);
-    setTimeout(() => {
-      setBusy(false);
-      onToast("PIP — Exchange buffered");
-      onBack();
-    }, 1800);
+    const live = await onValidate("EXCHANGE_" + fromToken + "_TO_" + toToken);
+    setBusy(false);
+    if (live) {
+      onToast("PIP — Exchange dikonfirmasi via node XYRON");
+    } else {
+      onToast("PIP — Exchange buffered (offline)");
+    }
+    onBack();
   }
 
   return (
@@ -532,7 +543,11 @@ function DetailPage({ tx, onBack }: { tx: Tx; onBack: () => void }) {
 }
 
 // ── Assets Page ───────────────────────────────────────────────────────────────
-function AssetsPage() {
+function AssetsPage({ tokenomics }: { tokenomics: { circulatingSupply: string; totalBlocks: string; maxSupply: string; blockReward: string; blockTime: string; halvingInterval: string } }) {
+  const circNum = parseFloat(tokenomics.circulatingSupply.replace(/,/g, "")) || 2140000;
+  const maxNum = parseFloat(tokenomics.maxSupply.replace(/,/g, "")) || 12614400;
+  const circulatingPct = ((circNum / maxNum) * 100).toFixed(2);
+
   return (
     <div className="page active" style={{ paddingBottom: 80 }}>
       <div className="topbar"><div className="logo">XYRON</div><div className="net-pill">ASSETS</div></div>
@@ -549,11 +564,11 @@ function AssetsPage() {
 
       <div style={{ margin: "0 22px 10px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         {[
-          { label: "MAX SUPPLY", val: "12,614,400", sub: "XYR — hard cap" },
-          { label: "CIRCULATING", val: "2,140,000", sub: "XYR · 16.97%" },
-          { label: "BLOCK REWARD", val: "6 XYR", sub: "per validator/block" },
-          { label: "BLOCK TIME", val: "180 sec", sub: "heartbeat interval" },
-          { label: "HALVING CYCLE", val: "175,200", sub: "blocks ≈ 1 year" },
+          { label: "MAX SUPPLY", val: tokenomics.maxSupply, sub: "XYR — hard cap" },
+          { label: "CIRCULATING", val: tokenomics.circulatingSupply, sub: `XYR · ${circulatingPct}%` },
+          { label: "BLOCK REWARD", val: tokenomics.blockReward + " XYR", sub: "per validator/block" },
+          { label: "BLOCK TIME", val: tokenomics.blockTime + " sec", sub: "heartbeat interval" },
+          { label: "HALVING CYCLE", val: tokenomics.halvingInterval, sub: "blocks ≈ 1 year" },
           { label: "CONFIRMATIONS", val: "6 req", sub: "blocks to finalize" },
         ].map(({ label, val, sub }) => (
           <div key={label} className="tok-card">
@@ -971,22 +986,166 @@ function ProfilePage({ txs, onNav }: { txs: Tx[]; onNav: (p: Page) => void }) {
   );
 }
 
+// ── Node URL Modal ────────────────────────────────────────────────────────────
+function NodeConfigModal({ onClose, onSave }: { onClose: () => void; onSave: (url: string) => void }) {
+  const [url, setUrl] = useState(getNodeUrl());
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.55)", zIndex: 500, display: "flex", alignItems: "flex-end" }} onClick={onClose}>
+      <div style={{ background: "var(--w)", borderRadius: "20px 20px 0 0", width: "100%", padding: "24px 22px 36px" }} onClick={e => e.stopPropagation()}>
+        <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>Node URL</div>
+        <div style={{ fontSize: 12, color: "var(--t3)", marginBottom: 16 }}>URL XYRON node (GitHub Codespaces / Replit deployment)</div>
+        <input className="finput mono" value={url} onChange={e => setUrl(e.target.value)} style={{ fontSize: 11, marginBottom: 12 }} />
+        <div style={{ fontSize: 10, color: "var(--t3)", marginBottom: 16 }}>Format: https://[nama-codespace]-3000.app.github.dev</div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: 13, border: "1px solid var(--b1)", borderRadius: "var(--r)", fontSize: 13, background: "var(--w)", color: "var(--t2)", cursor: "pointer" }}>Batal</button>
+          <button onClick={() => { onSave(url); onClose(); }} style={{ flex: 1, padding: 13, border: "none", borderRadius: "var(--r)", fontSize: 13, fontWeight: 600, background: "var(--t1)", color: "var(--w)", cursor: "pointer" }}>Simpan</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Tokenomics state (populated from live API) ────────────────────────────────
+interface TokenomicsState {
+  circulatingSupply: string;
+  totalBlocks: string;
+  maxSupply: string;
+  blockReward: string;
+  blockTime: string;
+  halvingInterval: string;
+}
+
+const DEFAULT_TOKENOMICS: TokenomicsState = {
+  circulatingSupply: "2,140,000",
+  totalBlocks: "—",
+  maxSupply: "12,614,400",
+  blockReward: "6",
+  blockTime: "180",
+  halvingInterval: "175,200",
+};
+
 // ── Main App ──────────────────────────────────────────────────────────────────
 export default function App() {
   const [dark, setDark] = useState(false);
   const [page, setPage] = useState<Page>("home");
   const [activeTx, setActiveTx] = useState<Tx | null>(null);
   const [toast, setToast] = useState({ msg: "", show: false });
-  const [txs] = useState<Tx[]>(SEED_TXS);
-  const [blocks] = useState<Block[]>(SEED_BLOCKS);
-  const [nodeStatus] = useState<"live" | "offline" | "connecting">("connecting");
+  const [txs, setTxs] = useState<Tx[]>(SEED_TXS);
+  const [blocks, setBlocks] = useState<Block[]>(SEED_BLOCKS);
+  const [nodeStatus, setNodeStatus] = useState<"live" | "offline" | "connecting">("connecting");
+  const [tokenomics, setTokenomics] = useState<TokenomicsState>(DEFAULT_TOKENOMICS);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>("idle");
+  const [showNodeConfig, setShowNodeConfig] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback((msg: string) => {
     setToast({ msg, show: true });
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(t => ({ ...t, show: false })), 2800);
+  }, []);
+
+  // ── Boot: connect to real XYRON node ─────────────────────────────
+  useEffect(() => {
+    async function boot() {
+      setNodeStatus("connecting");
+
+      // 1. Health check
+      const health = await XyronAPI.health();
+      if (!health) {
+        setNodeStatus("offline");
+        return;
+      }
+
+      setNodeStatus("live");
+      const ms = XyronAPI.getLatency() ?? 0;
+      showToast(`PIP — Connected to XYRON node (${ms}ms)`);
+
+      // 2. Tokenomics
+      const tok = await XyronAPI.tokenomics();
+      if (tok) {
+        setTokenomics(prev => ({
+          ...prev,
+          circulatingSupply: tok.circulating_supply != null
+            ? Number(tok.circulating_supply).toLocaleString()
+            : tok.circulatingSupply != null
+            ? Number(tok.circulatingSupply).toLocaleString()
+            : tok.minted != null
+            ? Number(tok.minted).toLocaleString()
+            : prev.circulatingSupply,
+          totalBlocks: tok.total_blocks != null
+            ? Number(tok.total_blocks).toLocaleString()
+            : tok.totalBlocks != null
+            ? Number(tok.totalBlocks).toLocaleString()
+            : prev.totalBlocks,
+          blockReward: tok.block_reward != null ? String(tok.block_reward) : prev.blockReward,
+          blockTime: tok.block_time != null ? String(tok.block_time) : prev.blockTime,
+        }));
+      }
+
+      // 3. Blocks — replace seed with live data
+      const blocksRes = await XyronAPI.blocks(20);
+      if (blocksRes) {
+        const live = normalizeBlocksResponse(blocksRes);
+        if (live.length > 0) {
+          setBlocks(live.map(b => ({
+            num: b.num,
+            hash: b.hash,
+            txs: b.txs,
+            validators: b.validators,
+            reward: b.reward,
+            time: b.time,
+            status: b.status,
+            size: b.size,
+            nonce: b.nonce,
+          })));
+        }
+      }
+    }
+
+    boot();
+
+    // Live block polling every 30s
+    const poll = setInterval(async () => {
+      if (!XyronAPI.isOnline()) return;
+      const res = await XyronAPI.blocks(20);
+      if (!res) return;
+      const live = normalizeBlocksResponse(res);
+      if (live.length > 0) {
+        setBlocks(live.map(b => ({
+          num: b.num, hash: b.hash, txs: b.txs,
+          validators: b.validators, reward: b.reward,
+          time: b.time, status: b.status, size: b.size, nonce: b.nonce,
+        })));
+      }
+    }, 30000);
+
+    return () => clearInterval(poll);
+  }, []);
+
+  const handleSaveNodeUrl = (url: string) => {
+    setNodeUrl(url);
+    setNodeStatus("connecting");
+    showToast("⟳ Reconnecting to node…");
+    // Re-boot
+    XyronAPI.health().then(h => {
+      if (h) {
+        setNodeStatus("live");
+        showToast("PIP — Connected to XYRON node");
+      } else {
+        setNodeStatus("offline");
+        showToast("⚠️ Node offline — using local data");
+      }
+    });
+  };
+
+  // ── Send / Exchange with real validate API ────────────────────────
+  const handleValidate = useCallback(async (walletId: string, smsMsg?: string): Promise<Tx | null> => {
+    if (!XyronAPI.isOnline()) return null;
+    const res = await XyronAPI.validate(walletId, smsMsg ?? "");
+    if (!res) return null;
+    const mapped = mapApiTx(res as Record<string, unknown>, walletId);
+    setTxs(prev => [mapped, ...prev]);
+    return mapped;
   }, []);
 
   const handleStartAll = useCallback(() => {
@@ -997,23 +1156,11 @@ export default function App() {
     }
     setSystemStatus("starting");
     showToast("⚔️ XYRON — Starting all systems…");
-
-    // Simulate sequential startup like the bash script
-    setTimeout(() => {
-      showToast("🟢 Blockchain Core started");
-    }, 1500);
-    setTimeout(() => {
-      showToast("🧠 AI Nexus V3 started");
-    }, 3000);
-    setTimeout(() => {
-      showToast("🛡️ ARMY-01 started");
-    }, 4500);
-    setTimeout(() => {
-      showToast("🔍 ARMY-02 started");
-    }, 6000);
-    setTimeout(() => {
-      showToast("🤖 ARMY-03 started");
-    }, 7500);
+    setTimeout(() => showToast("🟢 Blockchain Core started"), 1500);
+    setTimeout(() => showToast("🧠 AI Nexus V3 started"), 3000);
+    setTimeout(() => showToast("🛡️ ARMY-01 started"), 4500);
+    setTimeout(() => showToast("🔍 ARMY-02 started"), 6000);
+    setTimeout(() => showToast("🤖 ARMY-03 started"), 7500);
     setTimeout(() => {
       setSystemStatus("running");
       showToast("✅ ALL SYSTEMS OPERATIONAL — PIP");
@@ -1040,22 +1187,25 @@ export default function App() {
         <div style={{ position: "relative", flex: 1, overflow: "hidden", minHeight: 0 }}>
           {/* Pages */}
           {page === "home" && (
-            <HomePage txs={txs} onNav={navTo} dark={dark} onToggleDark={() => setDark(d => !d)} onShowTx={showTx} nodeStatus={nodeStatus} />
+            <HomePage txs={txs} onNav={navTo} dark={dark} onToggleDark={() => setDark(d => !d)} onShowTx={showTx} nodeStatus={nodeStatus} onOpenNodeConfig={() => setShowNodeConfig(true)} />
           )}
           {page === "history" && <ExplorerPage blocks={blocks} txs={txs} />}
-          {page === "send" && <SendPage onBack={goBack} onToast={showToast} />}
-          {page === "exchange" && <ExchangePage onBack={goBack} onToast={showToast} />}
+          {page === "send" && <SendPage onBack={goBack} onToast={showToast} onValidate={handleValidate} />}
+          {page === "exchange" && <ExchangePage onBack={goBack} onToast={showToast} onValidate={handleValidate} />}
           {page === "detail" && activeTx && <DetailPage tx={activeTx} onBack={goBack} />}
-          {page === "assets" && <AssetsPage />}
+          {page === "assets" && <AssetsPage tokenomics={tokenomics} />}
           {page === "mining" && <MiningPage systemStatus={systemStatus} onStartAll={handleStartAll} />}
           {page === "army" && <ArmyPage systemStatus={systemStatus} />}
           {page === "profile" && <ProfilePage txs={txs} onNav={navTo} />}
         </div>
 
-        {/* Bottom Nav (not on send/exchange/detail) */}
         {hasNav && <BottomNav tab={page} onSwitch={navTo} />}
 
         <Toast msg={toast.msg} show={toast.show} />
+
+        {showNodeConfig && (
+          <NodeConfigModal onClose={() => setShowNodeConfig(false)} onSave={handleSaveNodeUrl} />
+        )}
       </div>
     </div>
   );
