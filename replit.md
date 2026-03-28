@@ -48,6 +48,25 @@ Every package extends `tsconfig.base.json` which sets `composite: true`. The roo
 - `pnpm run build` — runs `typecheck` first, then recursively runs `build` in all packages that define it
 - `pnpm run typecheck` — runs `tsc --build --emitDeclarationOnly` using project references
 
+## Artifacts
+
+### `artifacts/xyron-wallet` — XYRON Wallet V.2 (React + Vite, port via `$PORT`)
+
+Mobile-first crypto wallet UI for the XYRON Blockchain. Built from the original `xyron-wallet-v2-updated.html` design (DM Sans / DM Mono fonts, green/dark CSS variables).
+
+**Pages (5 tabs in bottom nav):**
+- **Wallet (Home)** — balance, Send/Exchange actions, recent transactions, dark mode toggle
+- **Explorer** — block list with live heartbeat countdown, block details, search
+- **Mining** — AI Nexus V3 monitor: hash rate, blocks found, rewards, efficiency, live logs. START ALL button triggers sequential system startup sequence
+- **Army** — ARMY-01/02/03 guardian agent cards (expandable), PID, uptime, task count, live per-agent logs
+- **Profile/Assets** — user profile, tokenomics, triple-engine status, asset list
+
+**Key behaviors:**
+- `systemStatus` state (`idle | starting | running`) is shared between Mining and Army pages
+- START ALL (in Mining page) simulates `start-all.sh` order: Blockchain Core → AI Nexus V3 → ARMY-01 → ARMY-02 → ARMY-03, with toast notifications
+- When `running`, Mining shows live hash rate and AI Nexus logs; Army shows agent live logs with PID/uptime
+- Dark mode toggle on Home page applies `.dark` class with CSS variable overrides
+
 ## Packages
 
 ### `artifacts/api-server` (`@workspace/api-server`)
