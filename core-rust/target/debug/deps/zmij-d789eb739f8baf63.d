@@ -1,0 +1,8 @@
+/data/data/com.termux/files/home/XYRON-Crypto-V.2/core-rust/target/debug/deps/zmij-d789eb739f8baf63.d: /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zmij-1.0.21/src/lib.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zmij-1.0.21/src/traits.rs
+
+/data/data/com.termux/files/home/XYRON-Crypto-V.2/core-rust/target/debug/deps/libzmij-d789eb739f8baf63.rlib: /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zmij-1.0.21/src/lib.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zmij-1.0.21/src/traits.rs
+
+/data/data/com.termux/files/home/XYRON-Crypto-V.2/core-rust/target/debug/deps/libzmij-d789eb739f8baf63.rmeta: /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zmij-1.0.21/src/lib.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zmij-1.0.21/src/traits.rs
+
+/data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zmij-1.0.21/src/lib.rs:
+/data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zmij-1.0.21/src/traits.rs:

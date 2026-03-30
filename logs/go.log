@@ -1,0 +1,6 @@
+XYRON NEXUS STREAM - GO
+Node.js → Go → Rust Bridge
+Socket Node: /data/data/com.termux/files/home/xyron-go.sock
+Socket Rust: /data/data/com.termux/files/home/xyron-core.sock
+Status: PIP
+[NEXUS-GO] Server ready at /data/data/com.termux/files/home/xyron-go.sock

@@ -1,25 +1,49 @@
-# --- Saringan Node.js ---
-node_modules/
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# compiled output
+dist
+tmp
+out-tsc
+*.tsbuildinfo
+.expo
+.expo-shared
+
+# dependencies
+node_modules
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
 npm-debug.log
-package-lock.json
+yarn-error.log
+testem.log
+/typings
 
-# --- Saringan Rust ---
-# Folder target ini wajib dibuang karena sangat berat
-target/
-**/*.rs.bk
+# System Files
+.DS_Store
+Thumbs.db
 
-# --- Saringan Go ---
-bin/
-pkg/
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
 
-# --- Saringan XYRON System ---
-# Jangan simpan kabel socket ke GitHub
-*.sock
-# Jangan simpan catatan transaksi lama (biar history bersih)
-history/*.json
-logs/*.log
-
-# --- Saringan Replit ---
-.replit
-replit.nix
-
+# Replit
+.cache/
+.local/

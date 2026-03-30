@@ -1,0 +1,1 @@
+&ecdsa::signing::SigningKey<bip32::k256::Secp256k1>

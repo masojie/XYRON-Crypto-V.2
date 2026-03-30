@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "XYRON Wallet V.2"
+version = "1.0.0"
+id = "artifacts/xyron-wallet"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23996
+
+[services.development]
+run = "pnpm --filter @workspace/xyron-wallet run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/xyron-wallet", "run", "build" ]
+publicDir = "artifacts/xyron-wallet/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23996"
+BASE_PATH = "/"

@@ -1,0 +1,2376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>XYRON Wallet V.2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --w:#ffffff;--off:#f7f7f6;--off2:#f0f0ee;
+  --b1:#e8e8e6;--b2:#d4d4d0;
+  --t1:#111110;--t2:#5a5a56;--t3:#9a9a96;
+  --pip:#16a34a;--pip-bg:#f0fdf4;--pip-b:#bbf7d0;
+  --pip2:#d97706;--pip2-bg:#fffbeb;--pip2-b:#fde68a;
+  --pip3:#dc2626;--pip3-bg:#fef2f2;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+  --r:12px;--font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+}
+
+/* ─── Dark Mode ──────────────────────────────────────── */
+.dark{
+  --w:#0f0f0e;--off:#181817;--off2:#1e1e1c;
+  --b1:#2a2a28;--b2:#3a3a38;
+  --t1:#f0f0ee;--t2:#a0a09c;--t3:#606060;
+  --pip:#22c55e;--pip-bg:#052e16;--pip-b:#166534;
+  --pip2:#f59e0b;--pip2-bg:#1c1200;--pip2-b:#854d0e;
+  --pip3:#ef4444;--pip3-bg:#1a0000;
+  --blue:#60a5fa;--blue-bg:#0d1a2e;
+}
+.dark body,.dark html{ background:#0f0f0e; }
+.dark .app{ background:var(--w); }
+.dark .page{ background:var(--w); }
+.dark .bot-nav{ background:var(--w);border-color:var(--b1); }
+.dark #blk-detail-wrap{ background:var(--w); }
+.dark .sync-ov{ background:rgba(15,15,14,.96); }
+.dark .toast{ background:var(--off2);border:1px solid var(--b1); }
+html,body{height:100%;background:#e8e8e6;font-family:var(--font);color:var(--t1);font-size:15px;font-weight:400;-webkit-font-smoothing:antialiased;}
+button{font-family:var(--font);cursor:pointer;border:none;background:none;}
+input{font-family:var(--font);}
+select{font-family:var(--font);}
+
+/* ─── App Shell ──────────────────────────────────────── */
+.app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--w);display:flex;flex-direction:column;position:relative;overflow:hidden;}
+
+/* ─── Pages ──────────────────────────────────────────── */
+.page{position:absolute;inset:0;background:var(--w);display:flex;flex-direction:column;transform:translateX(100%);opacity:0;transition:transform .12s cubic-bezier(.4,0,.2,1),opacity .08s ease;pointer-events:none;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.page.active{transform:none;opacity:1;pointer-events:all;}
+.page.exit{transform:translateX(-5%);opacity:0;}
+#pg-home{transform:none;opacity:1;pointer-events:all;}
+
+/* ─── Top Bar ────────────────────────────────────────── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 0;}
+.logo{font-size:13px;font-weight:600;letter-spacing:.14em;color:var(--t1);}
+.net-pill{font-size:10px;font-family:var(--mono);color:var(--t3);background:var(--off);padding:4px 10px;border-radius:20px;border:1px solid var(--b1);}
+.pip-live{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--mono);color:var(--pip);}
+.pip-dot{width:6px;height:6px;border-radius:50%;background:var(--pip);animation:pulse 2s infinite;}
+
+/* ─── Page Header (inner pages) ─────────────────────── */
+.ph{display:flex;align-items:center;gap:12px;padding:20px 22px 4px;flex-shrink:0;}
+.back{width:34px;height:34px;border-radius:50%;border:1px solid var(--b1);background:var(--w);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .08s;}
+.back:hover{background:var(--off);}
+.back svg{width:15px;height:15px;stroke:var(--t1);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.ph-title{font-size:17px;font-weight:500;}
+.ph-sub{font-size:12px;color:var(--t3);margin-left:auto;font-family:var(--mono);}
+
+/* ─── Balance Block ──────────────────────────────────── */
+.bal-block{padding:36px 22px 28px;text-align:center;}
+.bal-label{font-size:11px;letter-spacing:.09em;color:var(--t3);font-weight:500;margin-bottom:6px;}
+.bal-num{font-size:44px;font-weight:400;letter-spacing:-.03em;color:var(--t1);line-height:1;}
+.bal-num em{font-style:normal;font-size:22px;font-weight:500;color:var(--t3);margin-left:5px;}
+.bal-usd{font-size:14px;color:var(--t3);margin-top:8px;}
+.bal-change{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-family:var(--mono);color:var(--pip);margin-top:6px;}
+.addr-chip{display:inline-flex;align-items:center;gap:6px;margin-top:14px;background:var(--off);border:1px solid var(--b1);border-radius:20px;padding:6px 14px;font-size:12px;font-family:var(--mono);color:var(--t2);cursor:pointer;transition:border-color .08s;}
+.addr-chip:hover{border-color:var(--b2);}
+.addr-chip svg{width:12px;height:12px;stroke:var(--t3);fill:none;stroke-width:2;}
+
+/* ─── Action Buttons ─────────────────────────────────── */
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 22px;}
+.act-btn{display:flex;flex-direction:column;align-items:center;gap:9px;padding:18px 12px;border:1px solid var(--b1);border-radius:var(--r);background:var(--w);cursor:pointer;transition:all .08s;font-family:var(--font);}
+.act-btn:hover{background:var(--off);border-color:var(--b2);}
+.act-btn:active{transform:scale(.97);}
+.act-icon{width:40px;height:40px;border-radius:50%;background:var(--off);display:flex;align-items:center;justify-content:center;}
+.act-icon svg{width:17px;height:17px;fill:none;stroke:var(--t1);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.act-btn.primary .act-icon{background:var(--t1);}
+.act-btn.primary .act-icon svg{stroke:var(--w);}
+.act-label{font-size:13px;font-weight:500;color:var(--t1);}
+
+/* ─── Section ────────────────────────────────────────── */
+.section{padding:24px 22px 0;}
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sec-title{font-size:11px;letter-spacing:.08em;color:var(--t3);font-weight:500;}
+.sec-link{font-size:12px;color:var(--t2);text-decoration:none;cursor:pointer;}
+.sec-link:hover{color:var(--t1);}
+hr.div{border:none;border-top:1px solid var(--b1);margin:24px 22px 0;}
+
+/* ─── Tx Item ────────────────────────────────────────── */
+.tx-list{display:flex;flex-direction:column;gap:0;}
+.tx-item{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--b1);cursor:pointer;transition:opacity .08s;}
+.tx-item:last-child{border-bottom:none;}
+.tx-item:hover{opacity:.7;}
+.tx-l{display:flex;align-items:center;gap:12px;}
+.tx-ico{width:38px;height:38px;border-radius:50%;background:var(--off);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.tx-ico svg{width:14px;height:14px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.tx-name{font-size:14px;font-weight:600;}
+.tx-meta{font-size:11px;color:var(--t3);margin-top:2px;font-family:var(--mono);}
+.tx-r{text-align:right;}
+.tx-amt{font-size:13px;font-weight:600;font-family:var(--mono);}
+.tx-st{font-size:10px;margin-top:3px;font-family:var(--mono);letter-spacing:.04em;font-weight:500;}
+.st-pip{color:var(--pip);}
+.st-buf{color:var(--pip2);}
+.st-fin{color:var(--t3);}
+
+/* ─── Bottom Nav ─────────────────────────────────────── */
+.bot-nav{margin-top:auto;border-top:1px solid var(--b1);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 0 18px;background:var(--w);flex-shrink:0;}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border:none;background:none;cursor:pointer;}
+.nav-btn svg{width:20px;height:20px;stroke:var(--t3);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .08s;}
+.nav-btn span{font-size:10px;color:var(--t3);transition:color .08s;font-family:var(--font);}
+.nav-btn.on svg{stroke:var(--t1);}
+.nav-btn.on span{color:var(--t1);font-weight:500;}
+
+/* ─── Forms ──────────────────────────────────────────── */
+.form-body{padding:16px 22px;flex:1;display:flex;flex-direction:column;gap:18px;}
+.fld{display:flex;flex-direction:column;gap:7px;}
+.flabel{font-size:11px;letter-spacing:.07em;color:var(--t3);font-weight:500;}
+.finput{width:100%;padding:13px 15px;border:1px solid var(--b1);border-radius:var(--r);font-size:15px;font-family:var(--font);color:var(--t1);background:var(--w);outline:none;transition:border-color .08s;}
+.finput:focus{border-color:var(--t1);}
+.finput.mono{font-family:var(--mono);font-size:13px;}
+.finput::placeholder{color:var(--t3);}
+.amt-wrap{position:relative;}
+.amt-cur{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:500;color:var(--t3);font-family:var(--mono);pointer-events:none;}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:var(--off);border-radius:9px;}
+.info-l{font-size:13px;color:var(--t2);}
+.info-r{font-size:13px;font-family:var(--mono);font-weight:500;color:var(--t1);}
+.submit-btn{margin-top:auto;padding:16px;background:var(--t1);color:var(--w);border:none;border-radius:var(--r);font-size:14px;font-weight:500;font-family:var(--font);cursor:pointer;transition:opacity .08s,transform .08s;letter-spacing:.02em;}
+.submit-btn:hover{opacity:.85;}
+.submit-btn:active{transform:scale(.98);}
+.submit-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+
+/* ─── Swap ───────────────────────────────────────────── */
+.swap-row{display:grid;grid-template-columns:1fr 36px 1fr;gap:8px;align-items:center;}
+.swap-mid{width:36px;height:36px;border-radius:50%;border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .12s;background:var(--w);}
+.swap-mid:hover{background:var(--off);transform:rotate(180deg);}
+.swap-mid svg{width:14px;height:14px;stroke:var(--t1);fill:none;stroke-width:2;}
+.token-box{padding:11px 12px;border:1px solid var(--b1);border-radius:var(--r);font-size:14px;font-family:var(--mono);font-weight:500;background:var(--off);text-align:center;cursor:pointer;color:var(--t1);}
+
+/* ─── Explorer / Block Card ──────────────────────────── */
+.block-card{margin:0 22px 10px;border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;background:var(--w);}
+.block-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--off);border-bottom:1px solid var(--b1);}
+.block-num{font-size:13px;font-weight:500;font-family:var(--mono);}
+.block-time{font-size:11px;color:var(--t3);font-family:var(--mono);}
+.block-rows .dr{display:flex;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--b1);gap:12px;font-size:12px;}
+.block-rows .dr:last-child{border-bottom:none;}
+.dr-k{color:var(--t3);flex-shrink:0;}
+.dr-v{font-family:var(--mono);word-break:break-all;text-align:right;color:var(--t1);}
+
+/* ─── Token / Tokenomics ─────────────────────────────── */
+.tok-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 22px;}
+.tok-card{background:var(--off);border-radius:var(--r);padding:14px;border:1px solid var(--b1);}
+.tok-label{font-size:10px;letter-spacing:.06em;color:var(--t3);font-weight:500;margin-bottom:6px;}
+.tok-val{font-size:16px;font-weight:500;font-family:var(--mono);color:var(--t1);}
+.tok-sub{font-size:11px;color:var(--t3);margin-top:3px;}
+.progress-wrap{margin:0 22px;margin-top:16px;}
+.prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-bottom:6px;}
+.prog-bar{height:5px;background:var(--b1);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--t1);border-radius:4px;transition:width .8s ease;}
+
+/* ─── Asset Row ──────────────────────────────────────── */
+.asset-item{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--b1);}
+.asset-item:last-child{border-bottom:none;}
+.asset-l{display:flex;align-items:center;gap:12px;}
+.asset-ico{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;}
+.asset-ico.xyr{background:var(--t1);color:var(--w);}
+.asset-ico.usdt{background:#26a17b;color:#fff;}
+.asset-ico.eth{background:#627eea;color:#fff;}
+.asset-name{font-size:14px;font-weight:500;}
+.asset-sub{font-size:12px;color:var(--t3);margin-top:1px;}
+.asset-r{text-align:right;}
+.asset-bal{font-size:14px;font-weight:500;font-family:var(--mono);}
+.asset-usd{font-size:12px;color:var(--t3);margin-top:1px;font-family:var(--mono);}
+
+/* ─── Profile ────────────────────────────────────────── */
+.profile-hero{display:flex;flex-direction:column;align-items:center;padding:32px 22px 24px;}
+.avatar{width:72px;height:72px;border-radius:50%;background:var(--t1);color:var(--w);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;margin-bottom:12px;}
+.profile-name{font-size:18px;font-weight:500;margin-bottom:4px;}
+.profile-addr{font-size:11px;font-family:var(--mono);color:var(--t3);}
+.menu-list{margin:0 22px;}
+.menu-item{display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid var(--b1);cursor:pointer;}
+.menu-item:last-child{border-bottom:none;}
+.menu-l{display:flex;align-items:center;gap:12px;}
+.menu-ico{width:34px;height:34px;border-radius:8px;background:var(--off);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.menu-ico svg{width:16px;height:16px;stroke:var(--t2);fill:none;stroke-width:2;}
+.menu-name{font-size:14px;font-weight:500;}
+.menu-sub{font-size:12px;color:var(--t3);margin-top:1px;}
+.chev{width:16px;height:16px;stroke:var(--t3);fill:none;stroke-width:2;}
+
+/* ─── Detail Page ────────────────────────────────────── */
+.det-hero{padding:28px 22px 20px;text-align:center;border-bottom:1px solid var(--b1);}
+.det-type{font-size:10px;letter-spacing:.1em;color:var(--t3);font-weight:500;margin-bottom:8px;}
+.det-amt{font-size:38px;font-weight:500;letter-spacing:-.02em;}
+.det-amt em{font-style:normal;font-size:18px;font-weight:500;color:var(--t3);margin-left:4px;}
+.det-live{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;font-size:11px;color:var(--t3);}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--pip);animation:pulse 2s infinite;}
+.det-rows{padding:0 22px;}
+.det-row{display:flex;justify-content:space-between;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--b1);gap:16px;}
+.det-row:last-child{border-bottom:none;}
+.det-k{font-size:11px;color:var(--t3);letter-spacing:.05em;flex-shrink:0;padding-top:2px;font-weight:500;}
+.det-v{font-size:12px;font-family:var(--mono);text-align:right;word-break:break-all;font-weight:500;}
+.status-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-family:var(--mono);font-weight:500;}
+.sc-pip{background:var(--pip-bg);color:#15803d;border:1px solid var(--pip-b);}
+.sc-buf{background:var(--pip2-bg);color:#92400e;border:1px solid var(--pip2-b);}
+.sc-fin{background:var(--off);color:var(--t2);border:1px solid var(--b1);}
+.sc-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.scd-pip{background:var(--pip);}
+.scd-buf{background:var(--pip2);animation:pulse 1.4s infinite;}
+.scd-fin{background:var(--t3);}
+
+/* ─── Sync Overlay ───────────────────────────────────── */
+.sync-ov{position:fixed;inset:0;background:rgba(255,255,255,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .12s ease;}
+.sync-ov.on{opacity:1;pointer-events:all;}
+.sync-ring{width:52px;height:52px;border-radius:50%;border:2px solid var(--b1);border-top-color:var(--t1);animation:spin 1s linear infinite;margin-bottom:20px;}
+.sync-title{font-size:15px;font-weight:500;margin-bottom:5px;}
+.sync-sub{font-size:12px;color:var(--t3);font-family:var(--mono);}
+.sync-dots span{display:inline-block;animation:blink 1.4s infinite;}
+.sync-dots span:nth-child(2){animation-delay:.18s;}
+.sync-dots span:nth-child(3){animation-delay:.36s;}
+
+/* ─── Toast ──────────────────────────────────────────── */
+.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--t1);color:var(--w);padding:11px 20px;border-radius:24px;font-size:13px;font-weight:500;opacity:0;transition:all .12s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;z-index:300;display:flex;align-items:center;gap:8px;}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+.t-dot{width:7px;height:7px;border-radius:50%;background:var(--pip);flex-shrink:0;}
+
+/* ─── Engine Status Bar ──────────────────────────────── */
+.engine-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 22px;}
+.eng-item{background:var(--off);border:1px solid var(--b1);border-radius:9px;padding:10px 12px;text-align:center;}
+.eng-name{font-size:9px;letter-spacing:.07em;color:var(--t3);font-weight:500;margin-bottom:4px;}
+.eng-status{font-size:11px;font-family:var(--mono);font-weight:500;}
+.eng-on{color:var(--pip);}
+.eng-buf{color:var(--pip2);}
+
+/* ─── History Full ───────────────────────────────────── */
+.hist-filters{display:flex;gap:6px;padding:0 22px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
+.hist-filters::-webkit-scrollbar{display:none;}
+.filter-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--b1);font-size:12px;font-family:var(--font);white-space:nowrap;cursor:pointer;transition:all .08s;background:var(--w);color:var(--t2);}
+.filter-btn.on{background:var(--t1);color:var(--w);border-color:var(--t1);}
+
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes blink{0%,80%,100%{opacity:0;}40%{opacity:1;}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+@keyframes fade-in{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.fade-in{animation:fade-in .3s ease;}
+
+/* ─── Block Formation Animation ─────────────────────── */
+@keyframes blockSlideIn{from{opacity:0;transform:translateY(-14px) scale(.96);}to{opacity:1;transform:none;}}
+@keyframes statFlash{0%,100%{color:var(--t1);}35%{color:var(--pip);transform:scale(1.08);}70%{color:var(--t1);transform:scale(1);}}
+.block-new{animation:blockSlideIn .32s cubic-bezier(.34,1.4,.64,1) both;}
+.stat-flash{animation:statFlash .7s ease both;}
+
+/* ─── Tokenomics Detail Modal ────────────────────────── */
+.tok-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .12s ease;}
+.tok-modal-ov.on{opacity:1;pointer-events:all;}
+.tok-modal{background:var(--w);border-radius:20px 20px 0 0;width:100%;max-height:88vh;overflow-y:auto;transform:translateY(100%);transition:transform .18s cubic-bezier(.4,0,.2,1);-webkit-overflow-scrolling:touch;}
+.tok-modal-ov.on .tok-modal{transform:none;}
+.tok-card-click{cursor:pointer;transition:opacity .08s;}
+.tok-card-click:hover{opacity:.8;}
+
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--b1);border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══════════════════════════════════════════════════════
+     HOME PAGE
+══════════════════════════════════════════════════════ -->
+<div class="page active" id="pg-home">
+  <div class="topbar">
+    <div class="logo">XYRON</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="pip-live"><div class="pip-dot"></div><span id="pip-status-txt">SYNC…</span></div>
+      <button onclick="toggleDark()" id="dark-toggle" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--b1);background:var(--off);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .08s;">
+        <svg id="dark-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
+      <button onclick="openNodeConfig()" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--b1);background:var(--off);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .08s;" title="Node settings">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+      </button>
+      <div class="net-pill">MAINNET · V.2</div>
+    </div>
+  </div>
+
+  <div class="bal-block">
+    <div class="bal-label">TOTAL BALANCE</div>
+    <div class="bal-num" id="home-bal">4,821.50<em>XYR</em></div>
+    <div class="bal-usd">≈ $12,437.20 USD</div>
+    <div class="bal-change">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+      +2.4% today
+    </div>
+    <div class="addr-chip" id="home-addr-chip" onclick="copyAddr()">
+      <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      <span id="home-addr-txt">0xA3F7...9d2C</span>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="act-btn primary" onclick="go('send')">
+      <div class="act-icon"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+      <span class="act-label">Send</span>
+    </button>
+    <button class="act-btn" onclick="go('exchange')">
+      <div class="act-icon"><svg viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg></div>
+      <span class="act-label">Exchange</span>
+    </button>
+  </div>
+
+  <hr class="div"/>
+  <div class="section" style="padding-bottom:0;">
+    <div class="sec-header">
+      <span class="sec-title">RECENT TRANSACTIONS</span>
+      <span class="sec-link" onclick="switchTab('history')">Explorer →</span>
+    </div>
+  </div>
+  <div class="section" style="padding-top:0;">
+    <div class="tx-list" id="home-txlist"></div>
+  </div>
+
+  <div class="bot-nav" id="botnav">
+    <button class="nav-btn on" onclick="switchTab('home')" data-tab="home">
+      <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M9 21V9h6v12"/></svg>
+      <span>Wallet</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('history')" data-tab="history">
+      <svg viewBox="0 0 24 24"><rect x="2" y="3" width="8" height="8" rx="1"/><rect x="14" y="3" width="8" height="8" rx="1"/><rect x="2" y="13" width="8" height="8" rx="1"/><rect x="14" y="13" width="8" height="8" rx="1"/></svg>
+      <span>Explorer</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('assets')" data-tab="assets">
+      <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      <span>Assets</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('profile')" data-tab="profile">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span>Profile</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     EXPLORER TAB — XYRON CHAIN BLOCK EXPLORER
+══════════════════════════════════════════════════════ -->
+<div class="page" id="pg-history">
+  <div class="topbar">
+    <div class="logo">XYRON</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="pip-live"><div class="pip-dot"></div><span>PIP</span></div>
+      <div class="net-pill">EXPLORER</div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div style="padding:12px 22px 0;flex-shrink:0;">
+    <div class="amt-wrap">
+      <input class="finput mono" id="tab-exp-search" type="text" placeholder="Search block # or hash…" oninput="tabExpSearch(this.value)" style="padding-right:40px;font-size:12px;height:40px;padding-top:0;padding-bottom:0;"/>
+      <div style="position:absolute;right:13px;top:50%;transform:translateY(-50%);">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chain stats compact -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 22px 0;flex-shrink:0;">
+    <div style="background:var(--off);border:1px solid var(--b1);border-radius:8px;padding:8px 6px;text-align:center;">
+      <div style="font-size:8px;letter-spacing:.06em;color:var(--t3);font-weight:600;margin-bottom:2px;">BLOCKS</div>
+      <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--t1);" id="te-blocks">59</div>
+    </div>
+    <div style="background:var(--off);border:1px solid var(--b1);border-radius:8px;padding:8px 6px;text-align:center;">
+      <div style="font-size:8px;letter-spacing:.06em;color:var(--t3);font-weight:600;margin-bottom:2px;">TXs</div>
+      <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--t1);" id="te-txs">3</div>
+    </div>
+    <div style="background:var(--off);border:1px solid var(--b1);border-radius:8px;padding:8px 6px;text-align:center;">
+      <div style="font-size:8px;letter-spacing:.06em;color:var(--t3);font-weight:600;margin-bottom:2px;">MINTED</div>
+      <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--t1);" id="te-minted">2,124</div>
+    </div>
+    <div style="background:var(--off);border:1px solid var(--b1);border-radius:8px;padding:8px 6px;text-align:center;">
+      <div style="font-size:8px;letter-spacing:.06em;color:var(--t3);font-weight:600;margin-bottom:2px;">NEXT</div>
+      <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--pip2);" id="te-next">—s</div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div style="padding:10px 22px 6px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+    <div style="font-size:10px;font-weight:700;letter-spacing:.09em;color:var(--t3);">LATEST BLOCKS</div>
+    <div style="font-size:10px;color:var(--t3);font-family:var(--mono);" id="te-heartbeat">⏱ 180s cycle</div>
+  </div>
+
+  <!-- Block list -->
+  <div id="tab-exp-list" style="flex:1;overflow-y:auto;padding:0 22px 16px;"></div>
+
+  <!-- Block detail overlay -->
+  <div id="blk-detail-wrap" style="display:none;position:absolute;inset:0;background:var(--w);overflow-y:auto;z-index:10;">
+    <div style="display:flex;align-items:center;gap:12px;padding:18px 22px 8px;flex-shrink:0;border-bottom:1px solid var(--b1);">
+      <button onclick="closeBlockDetail()" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--b1);background:var(--w);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .08s;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--t1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div style="font-size:16px;font-weight:700;font-family:var(--mono);" id="bd-title">Block #—</div>
+      <div id="bd-pip" style="margin-left:auto;"></div>
+    </div>
+    <div style="margin:12px 22px 0;padding:10px 14px;background:var(--off);border:1px solid var(--b1);border-radius:10px;">
+      <div style="font-size:9px;letter-spacing:.07em;color:var(--t3);font-weight:600;margin-bottom:4px;">BLOCK HASH</div>
+      <div style="font-size:12px;font-family:var(--mono);color:var(--t1);word-break:break-all;font-weight:500;" id="bd-hash">—</div>
+    </div>
+    <div style="margin:10px 22px 0;border:1px solid var(--b1);border-radius:10px;overflow:hidden;" id="bd-meta-rows"></div>
+    <div style="padding:12px 22px 6px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--t3);" id="bd-tx-label">TRANSACTIONS</div>
+    </div>
+    <div id="bd-tx-list" style="padding:0 22px 80px;"></div>
+  </div>
+
+  <div class="bot-nav">
+    <button class="nav-btn" onclick="switchTab('home')" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M9 21V9h6v12"/></svg><span>Wallet</span></button>
+    <button class="nav-btn on" onclick="switchTab('history')" data-tab="history"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="8" height="8" rx="1"/><rect x="14" y="3" width="8" height="8" rx="1"/><rect x="2" y="13" width="8" height="8" rx="1"/><rect x="14" y="13" width="8" height="8" rx="1"/></svg><span>Explorer</span></button>
+    <button class="nav-btn" onclick="switchTab('assets')" data-tab="assets"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Assets</span></button>
+    <button class="nav-btn" onclick="switchTab('profile')" data-tab="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ASSETS PAGE
+══════════════════════════════════════════════════════ -->
+<div class="page" id="pg-assets">
+  <div class="topbar"><div class="logo">XYRON</div><div class="net-pill">ASSETS</div></div>
+
+  <!-- Portfolio total -->
+  <div style="padding:28px 22px 20px;text-align:center;border-bottom:1px solid var(--b1);">
+    <div class="bal-label">PORTFOLIO VALUE</div>
+    <div class="bal-num">12,437.20<em>USD</em></div>
+    <div style="font-size:12px;color:var(--pip);margin-top:6px;font-family:var(--mono);">▲ +2.4% (24h)</div>
+  </div>
+
+  <!-- Tokenomics Section -->
+  <div class="section" style="padding-bottom:12px;">
+    <div class="sec-header"><span class="sec-title">XYR TOKENOMICS</span></div>
+  </div>
+
+  <!-- Row 1: Supply -->
+  <div style="margin:0 22px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div class="tok-card-click" onclick="openTokModal('supply')" style="background:var(--off);border:1px solid var(--b1);border-radius:var(--r);padding:16px;">
+      <div class="tok-label">MAX SUPPLY</div>
+      <div style="font-size:22px;font-weight:500;font-family:var(--mono);color:var(--t1);margin:4px 0 2px;">12,614,400</div>
+      <div class="tok-sub">XYR — hard cap <span style="color:var(--pip);font-size:9px;">↗</span></div>
+    </div>
+    <div class="tok-card-click" onclick="openTokModal('circulating')" style="background:var(--off);border:1px solid var(--b1);border-radius:var(--r);padding:16px;">
+      <div class="tok-label">CIRCULATING</div>
+      <div style="font-size:22px;font-weight:500;font-family:var(--mono);color:var(--t1);margin:4px 0 2px;">2,140,000</div>
+      <div class="tok-sub">XYR · 16.97% <span style="color:var(--pip);font-size:9px;">↗</span></div>
+    </div>
+  </div>
+
+  <!-- Progress bar supply -->
+  <div style="margin:0 22px 10px;">
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-bottom:5px;">
+      <span>Supply minted</span><span>16.97%</span>
+    </div>
+    <div style="height:4px;background:var(--b1);border-radius:4px;overflow:hidden;">
+      <div style="height:100%;width:16.97%;background:var(--t1);border-radius:4px;transition:width .8s ease;"></div>
+    </div>
+  </div>
+
+  <!-- Row 2: Block mechanics -->
+  <div style="margin:0 22px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div class="tok-card-click" onclick="openTokModal('reward')" style="background:var(--off);border:1px solid var(--b1);border-radius:var(--r);padding:16px;">
+      <div class="tok-label">BLOCK REWARD</div>
+      <div style="font-size:28px;font-weight:500;font-family:var(--mono);color:var(--t1);margin:4px 0 2px;">6 <span style="font-size:14px;color:var(--t3);">XYR</span></div>
+      <div class="tok-sub">per validator/block <span style="color:var(--pip);font-size:9px;">↗</span></div>
+    </div>
+    <div class="tok-card-click" onclick="openTokModal('blocktime')" style="background:var(--off);border:1px solid var(--b1);border-radius:var(--r);padding:16px;">
+      <div class="tok-label">BLOCK TIME</div>
+      <div style="font-size:28px;font-weight:500;font-family:var(--mono);color:var(--t1);margin:4px 0 2px;">180 <span style="font-size:14px;color:var(--t3);">sec</span></div>
+      <div class="tok-sub">heartbeat interval <span style="color:var(--pip);font-size:9px;">↗</span></div>
+    </div>
+  </div>
+
+  <!-- Row 3: Halving + Confirmations -->
+  <div style="margin:0 22px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div class="tok-card-click" onclick="openTokModal('halving')" style="background:var(--off);border:1px solid var(--b1);border-radius:var(--r);padding:16px;">
+      <div class="tok-label">HALVING CYCLE</div>
+      <div style="font-size:18px;font-weight:500;font-family:var(--mono);color:var(--t1);margin:4px 0 2px;">175,200</div>
+      <div class="tok-sub">blocks ≈ 1 year <span style="color:var(--pip);font-size:9px;">↗</span></div>
+    </div>
+    <div class="tok-card-click" onclick="openTokModal('confirmations')" style="background:var(--off);border:1px solid var(--b1);border-radius:var(--r);padding:16px;">
+      <div class="tok-label">CONFIRMATIONS</div>
+      <div style="font-size:28px;font-weight:500;font-family:var(--mono);color:var(--t1);margin:4px 0 2px;">6 <span style="font-size:14px;color:var(--t3);">req</span></div>
+      <div class="tok-sub">blocks to finalize <span style="color:var(--pip);font-size:9px;">↗</span></div>
+    </div>
+  </div>
+
+  <!-- Row 4: Encryption full-width -->
+  <div style="margin:0 22px 10px;border:1px solid var(--b1);border-radius:var(--r);padding:16px;background:var(--off);">
+    <div class="tok-label" style="margin-bottom:10px;">X11-NANO ENCRYPTION STACK</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;">
+      <div style="background:var(--w);border:1px solid var(--b1);border-radius:8px;padding:7px 8px;text-align:center;font-size:10px;font-family:var(--mono);color:var(--t2);">BLAKE3</div>
+      <div style="background:var(--w);border:1px solid var(--b1);border-radius:8px;padding:7px 8px;text-align:center;font-size:10px;font-family:var(--mono);color:var(--t2);">GROESTL</div>
+      <div style="background:var(--w);border:1px solid var(--b1);border-radius:8px;padding:7px 8px;text-align:center;font-size:10px;font-family:var(--mono);color:var(--t2);">SHA3-256</div>
+      <div style="background:var(--w);border:1px solid var(--b1);border-radius:8px;padding:7px 8px;text-align:center;font-size:10px;font-family:var(--mono);color:var(--t2);">KECCAK</div>
+      <div style="background:var(--w);border:1px solid var(--b1);border-radius:8px;padding:7px 8px;text-align:center;font-size:10px;font-family:var(--mono);color:var(--t2);">SHA2-256</div>
+      <div style="background:var(--w);border:1px solid var(--b1);border-radius:8px;padding:7px 8px;text-align:center;font-size:10px;font-family:var(--mono);color:var(--t2);">RIPEMD-160</div>
+      <div style="background:var(--w);border:1px solid var(--b1);border-radius:8px;padding:7px 8px;text-align:center;font-size:10px;font-family:var(--mono);color:var(--t2);">WHIRLPOOL</div>
+      <div style="background:var(--w);border:1px solid var(--b1);border-radius:8px;padding:7px 8px;text-align:center;font-size:10px;font-family:var(--mono);color:var(--t2);">BLAKE2b</div>
+      <div style="background:var(--w);border:1px solid var(--b1);border-radius:8px;padding:7px 8px;text-align:center;font-size:10px;font-family:var(--mono);color:var(--t2);">STREEBOG</div>
+      <div style="background:var(--w);border:1px solid var(--b1);border-radius:8px;padding:7px 8px;text-align:center;font-size:10px;font-family:var(--mono);color:var(--t2);">SM3</div>
+      <div style="background:var(--w);border:1px solid var(--b1);border-radius:8px;padding:7px 8px;text-align:center;font-size:10px;font-family:var(--mono);color:var(--t2);">BLAKE2s</div>
+      <div style="background:var(--t1);border-radius:8px;padding:7px 8px;text-align:center;font-size:10px;font-family:var(--mono);color:var(--w);">+4 ext</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;">
+      <span style="color:var(--t3);">Dynamic layers</span>
+      <span style="font-family:var(--mono);font-weight:500;color:var(--pip);">11–15 active</span>
+    </div>
+  </div>
+
+  <!-- Triple-Engine Status (moved here from Home) -->
+  <div style="margin:0 22px 10px;border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;">
+    <div style="padding:12px 16px;background:var(--off);border-bottom:1px solid var(--b1);">
+      <div class="tok-label" style="margin:0;">TRIPLE-ENGINE VALIDATION STATUS</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);">
+      <div style="padding:14px 12px;text-align:center;border-right:1px solid var(--b1);">
+        <div style="font-size:9px;letter-spacing:.07em;color:var(--t3);font-weight:500;margin-bottom:6px;">NLV · RUST</div>
+        <div style="font-size:11px;font-family:var(--mono);font-weight:500;color:var(--pip);">● ONLINE</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:4px;">342 µs</div>
+      </div>
+      <div style="padding:14px 12px;text-align:center;border-right:1px solid var(--b1);">
+        <div style="font-size:9px;letter-spacing:.07em;color:var(--t3);font-weight:500;margin-bottom:6px;">PEP · GO</div>
+        <div style="font-size:11px;font-family:var(--mono);font-weight:500;color:var(--pip);">● ONLINE</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:4px;">412 µs</div>
+      </div>
+      <div style="padding:14px 12px;text-align:center;">
+        <div style="font-size:9px;letter-spacing:.07em;color:var(--t3);font-weight:500;margin-bottom:6px;">NCE · NODE</div>
+        <div style="font-size:11px;font-family:var(--mono);font-weight:500;color:var(--pip);">● ONLINE</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:4px;">856 µs</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="div"/>
+  <div class="section" style="padding-bottom:0;">
+    <div class="sec-header"><span class="sec-title">MY ASSETS</span></div>
+  </div>
+  <div class="section" style="padding-top:0;">
+    <div class="asset-item" onclick="openTokModal('xyr-asset')" style="cursor:pointer;">
+      <div class="asset-l">
+        <div class="asset-ico xyr">XYR</div>
+        <div><div class="asset-name">XYRON</div><div class="asset-sub">Native token · Hybrid chain</div></div>
+      </div>
+      <div class="asset-r">
+        <div class="asset-bal">4,821.50 XYR</div>
+        <div class="asset-usd" style="display:flex;align-items:center;gap:4px;">$12,437.20 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+    <div class="asset-item" onclick="openTokModal('usdt-asset')" style="cursor:pointer;">
+      <div class="asset-l">
+        <div class="asset-ico usdt">USD</div>
+        <div><div class="asset-name">Tether</div><div class="asset-sub">USDT · Stablecoin</div></div>
+      </div>
+      <div class="asset-r">
+        <div class="asset-bal">243.10 USDT</div>
+        <div class="asset-usd" style="display:flex;align-items:center;gap:4px;">$243.10 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bot-nav">
+    <button class="nav-btn" onclick="switchTab('home')" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M9 21V9h6v12"/></svg><span>Wallet</span></button>
+    <button class="nav-btn" onclick="switchTab('history')" data-tab="history"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="8" height="8" rx="1"/><rect x="14" y="3" width="8" height="8" rx="1"/><rect x="2" y="13" width="8" height="8" rx="1"/><rect x="14" y="13" width="8" height="8" rx="1"/></svg><span>Explorer</span></button>
+    <button class="nav-btn on" onclick="switchTab('assets')" data-tab="assets"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Assets</span></button>
+    <button class="nav-btn" onclick="switchTab('profile')" data-tab="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PROFILE PAGE
+══════════════════════════════════════════════════════ -->
+<div class="page" id="pg-profile">
+  <div class="topbar"><div class="logo">XYRON</div><div class="net-pill">PROFILE</div></div>
+  <div class="profile-hero">
+    <div class="avatar">MF</div>
+    <div class="profile-name">M Fauzi Nizam</div>
+    <div class="profile-addr" id="profile-addr-txt">0xA3F7b29c4E8D...9d2C</div>
+    <div style="margin-top:10px;display:flex;gap:8px;">
+      <div style="background:var(--pip-bg);color:#15803d;font-size:11px;font-family:var(--mono);padding:4px 10px;border-radius:20px;border:1px solid var(--pip-b);">● VALIDATOR</div>
+      <div style="background:var(--off);color:var(--t2);font-size:11px;font-family:var(--mono);padding:4px 10px;border-radius:20px;border:1px solid var(--b1);">X11-NANO</div>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 22px 20px;">
+    <div class="tok-card" style="text-align:center;">
+      <div class="tok-label" style="text-align:center;">TXs</div>
+      <div class="tok-val" style="text-align:center;" id="prof-txcount">3</div>
+    </div>
+    <div class="tok-card" style="text-align:center;">
+      <div class="tok-label" style="text-align:center;">BLOCKS</div>
+      <div class="tok-val" style="text-align:center;">59</div>
+    </div>
+    <div class="tok-card" style="text-align:center;">
+      <div class="tok-label" style="text-align:center;">REWARDS</div>
+      <div class="tok-val" style="text-align:center;">2,124</div>
+    </div>
+  </div>
+
+  <div class="menu-list">
+    <div class="menu-item" onclick="go('wallet-setup')">
+      <div class="menu-l">
+        <div class="menu-ico"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
+        <div><div class="menu-name">Create / Import Wallet</div><div class="menu-sub">New address · Private key · Import</div></div>
+      </div>
+      <svg class="chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="menu-item" onclick="openMyTxExplorer()">
+      <div class="menu-l">
+        <div class="menu-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div><div class="menu-name">My Transaction Explorer</div><div class="menu-sub">View all transactions by block</div></div>
+      </div>
+      <svg class="chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="menu-item" onclick="toggleSecurity()" style="flex-direction:column;align-items:stretch;gap:0;cursor:pointer;">
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+        <div class="menu-l">
+          <div class="menu-ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div><div class="menu-name">Security</div><div class="menu-sub">X11-Nano Dynamic Shield · LQV</div></div>
+        </div>
+        <svg id="sec-chev" class="chev" viewBox="0 0 24 24" style="transition:transform .2s;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <!-- Security detail panel (collapsed by default) -->
+      <div id="sec-panel" style="display:none;margin-top:14px;border-top:1px solid var(--b1);padding-top:14px;">
+        <!-- X11-Nano -->
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10px;letter-spacing:.07em;color:var(--t3);font-weight:500;margin-bottom:8px;">X11-NANO DYNAMIC SHIELD</div>
+          <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:8px;">Dual-layer dynamic encryption that auto-scales from 11 to 15 layers when suspicious nodes are detected. Uses 11 distinct hash algorithms processed in parallel across CPU cores.</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;">
+            <span style="font-size:10px;font-family:var(--mono);background:var(--off);border:1px solid var(--b1);border-radius:6px;padding:3px 8px;color:var(--t2);">BLAKE3</span>
+            <span style="font-size:10px;font-family:var(--mono);background:var(--off);border:1px solid var(--b1);border-radius:6px;padding:3px 8px;color:var(--t2);">GROESTL</span>
+            <span style="font-size:10px;font-family:var(--mono);background:var(--off);border:1px solid var(--b1);border-radius:6px;padding:3px 8px;color:var(--t2);">SHA3-256</span>
+            <span style="font-size:10px;font-family:var(--mono);background:var(--off);border:1px solid var(--b1);border-radius:6px;padding:3px 8px;color:var(--t2);">KECCAK-256</span>
+            <span style="font-size:10px;font-family:var(--mono);background:var(--off);border:1px solid var(--b1);border-radius:6px;padding:3px 8px;color:var(--t2);">SHA2-256</span>
+            <span style="font-size:10px;font-family:var(--mono);background:var(--off);border:1px solid var(--b1);border-radius:6px;padding:3px 8px;color:var(--t2);">RIPEMD-160</span>
+            <span style="font-size:10px;font-family:var(--mono);background:var(--off);border:1px solid var(--b1);border-radius:6px;padding:3px 8px;color:var(--t2);">WHIRLPOOL</span>
+            <span style="font-size:10px;font-family:var(--mono);background:var(--off);border:1px solid var(--b1);border-radius:6px;padding:3px 8px;color:var(--t2);">BLAKE2b</span>
+            <span style="font-size:10px;font-family:var(--mono);background:var(--off);border:1px solid var(--b1);border-radius:6px;padding:3px 8px;color:var(--t2);">STREEBOG</span>
+            <span style="font-size:10px;font-family:var(--mono);background:var(--off);border:1px solid var(--b1);border-radius:6px;padding:3px 8px;color:var(--t2);">SM3</span>
+            <span style="font-size:10px;font-family:var(--mono);background:var(--off);border:1px solid var(--b1);border-radius:6px;padding:3px 8px;color:var(--t2);">BLAKE2s</span>
+          </div>
+        </div>
+        <!-- LQV -->
+        <div style="margin-bottom:12px;padding:12px;background:var(--off);border-radius:9px;border:1px solid var(--b1);">
+          <div style="font-size:10px;letter-spacing:.07em;color:var(--t3);font-weight:500;margin-bottom:5px;">LOGIC-QUANTUM VERIFICATION (LQV)</div>
+          <div style="font-size:13px;color:var(--t2);line-height:1.6;">Multi-factor node authentication system. Verifies each wallet signature against a unique X11 token before any transaction is processed. Rejects nodes without valid LQV signature.</div>
+        </div>
+        <!-- SMS Encrypt -->
+        <div style="padding:12px;background:var(--off);border-radius:9px;border:1px solid var(--b1);">
+          <div style="font-size:10px;letter-spacing:.07em;color:var(--t3);font-weight:500;margin-bottom:5px;">SMS INSCRIBE ENCRYPTION</div>
+          <div style="font-size:13px;color:var(--t2);line-height:1.6;">Community messages (max 160 chars) are encrypted by Rust X11-Nano before permanent storage in <span style="font-family:var(--mono);font-size:12px;">/history/block_*.json</span>. Each message carries an X11-Nano signature for verification.</div>
+        </div>
+        <!-- Unix Socket -->
+        <div style="margin-top:10px;padding:12px;background:var(--off);border-radius:9px;border:1px solid var(--b1);">
+          <div style="font-size:10px;letter-spacing:.07em;color:var(--t3);font-weight:500;margin-bottom:8px;">INTERNAL SOCKET TOPOLOGY</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;">
+              <span style="font-family:var(--mono);color:var(--t2);">/tmp/xyron-core.sock</span>
+              <span style="color:var(--t3);">Go → Rust</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;">
+              <span style="font-family:var(--mono);color:var(--t2);">/tmp/xyron-go.sock</span>
+              <span style="color:var(--t3);">Node.js → Go</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;">
+              <span style="color:var(--t2);">Latency</span>
+              <span style="font-family:var(--mono);color:var(--pip);">&lt; 500 µs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="menu-item">
+      <div class="menu-l">
+        <div class="menu-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg></div>
+        <div><div class="menu-name">Network</div><div class="menu-sub">Node: Blitar, East Java</div></div>
+      </div>
+      <svg class="chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="menu-item">
+      <div class="menu-l">
+        <div class="menu-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg></div>
+        <div><div class="menu-name">About XYRON</div><div class="menu-sub">V.2 · Hybrid Blockchain</div></div>
+      </div>
+      <svg class="chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+  </div>
+
+  <div class="bot-nav">
+    <button class="nav-btn" onclick="switchTab('home')" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M9 21V9h6v12"/></svg><span>Wallet</span></button>
+    <button class="nav-btn" onclick="switchTab('history')" data-tab="history"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="8" height="8" rx="1"/><rect x="14" y="3" width="8" height="8" rx="1"/><rect x="2" y="13" width="8" height="8" rx="1"/><rect x="14" y="13" width="8" height="8" rx="1"/></svg><span>Explorer</span></button>
+    <button class="nav-btn" onclick="switchTab('assets')" data-tab="assets"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Assets</span></button>
+    <button class="nav-btn on" onclick="switchTab('profile')" data-tab="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SEND PAGE
+══════════════════════════════════════════════════════ -->
+<div class="page" id="pg-send">
+  <div class="ph">
+    <button class="back" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="ph-title">Send XYR</div>
+    <div class="ph-sub">Fee: 0.0012 XYR</div>
+  </div>
+  <div class="form-body">
+    <div class="fld">
+      <div class="flabel">RECIPIENT ADDRESS</div>
+      <input class="finput mono" id="send-to" type="text" placeholder="0x...wallet address" spellcheck="false"/>
+    </div>
+    <div class="fld">
+      <div class="flabel">AMOUNT</div>
+      <div class="amt-wrap">
+        <input class="finput" id="send-amt" type="number" placeholder="0.00" min="0" step="0.01"/>
+        <div class="amt-cur">XYR</div>
+      </div>
+    </div>
+    <div class="fld">
+      <div class="flabel">SMS INSCRIBE <span style="color:var(--t3);font-size:10px;">(optional · max 160 chars)</span></div>
+      <input class="finput" id="send-sms" type="text" maxlength="160" placeholder="Attach encrypted message to block…"/>
+    </div>
+    <div class="info-row"><span class="info-l">Available balance</span><span class="info-r">4,821.50 XYR</span></div>
+    <div class="info-row" style="margin-top:-8px;"><span class="info-l">Network fee</span><span class="info-r">0.0012 XYR</span></div>
+    <div class="info-row" style="margin-top:-8px;"><span class="info-l">Encryption</span><span class="info-r">X11-Nano · 15 layers</span></div>
+    <button class="submit-btn" id="btn-send" onclick="handleSend()">Send Transaction</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     EXCHANGE PAGE
+══════════════════════════════════════════════════════ -->
+<div class="page" id="pg-exchange">
+  <div class="ph">
+    <button class="back" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="ph-title">Exchange</div>
+  </div>
+  <div class="form-body">
+    <div class="fld">
+      <div class="flabel">SWAP PAIR</div>
+      <div class="swap-row">
+        <div class="token-box">XYR</div>
+        <div class="swap-mid" onclick="flipTokens()"><svg viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg></div>
+        <div class="token-box" id="exc-to">USDT</div>
+      </div>
+    </div>
+    <div class="fld">
+      <div class="flabel">AMOUNT</div>
+      <div class="amt-wrap">
+        <input class="finput" id="exc-amt" type="number" placeholder="0.00" min="0" step="0.01" oninput="calcExc()"/>
+        <div class="amt-cur">XYR</div>
+      </div>
+    </div>
+    <div class="info-row"><span class="info-l">You receive ≈</span><span class="info-r" id="exc-out">0.00 USDT</span></div>
+    <div class="info-row" style="margin-top:-8px;"><span class="info-l">Rate</span><span class="info-r">1 XYR = 2.578 USDT</span></div>
+    <div class="info-row" style="margin-top:-8px;"><span class="info-l">PEP routing</span><span class="info-r" style="color:var(--pip);">Active</span></div>
+    <button class="submit-btn" id="btn-exc" onclick="handleExchange()">Confirm Exchange</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     BLOCK EXPLORER PAGE
+══════════════════════════════════════════════════════ -->
+<div class="page" id="pg-explorer">
+  <div class="ph">
+    <button class="back" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="ph-title">Block Explorer</div>
+    <div class="ph-sub" id="exp-blockcount">Block #—</div>
+  </div>
+
+  <!-- Search -->
+  <div style="padding:8px 22px 16px;flex-shrink:0;">
+    <div class="amt-wrap">
+      <input class="finput mono" id="exp-search" type="text" placeholder="Search TxID or block number…" oninput="searchExplorer(this.value)"/>
+      <div style="position:absolute;right:14px;top:50%;transform:translateY(-50%);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chain stats -->
+  <div class="tok-grid" style="margin-bottom:16px;">
+    <div class="tok-card"><div class="tok-label">TOTAL BLOCKS</div><div class="tok-val" id="exp-totalblocks">59</div></div>
+    <div class="tok-card"><div class="tok-label">TOTAL TXs</div><div class="tok-val" id="exp-totaltxs">—</div></div>
+    <div class="tok-card"><div class="tok-label">LAST BLOCK</div><div class="tok-val" id="exp-lasttime">—</div></div>
+    <div class="tok-card"><div class="tok-label">MINTED XYR</div><div class="tok-val" id="exp-minted">2,124</div></div>
+  </div>
+
+  <div style="padding:0 22px;margin-bottom:10px;flex-shrink:0;">
+    <div class="sec-title">LATEST BLOCKS</div>
+  </div>
+  <div id="exp-blocks" style="flex:1;overflow-y:auto;padding-bottom:16px;"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TX DETAIL PAGE
+══════════════════════════════════════════════════════ -->
+<div class="page" id="pg-detail">
+  <div class="ph">
+    <button class="back" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="ph-title">Transaction</div>
+  </div>
+  <div class="det-hero">
+    <div class="det-type" id="d-type">SEND</div>
+    <div class="det-amt" id="d-amt">—<em>XYR</em></div>
+    <div class="det-live"><div class="live-dot"></div>Live from Google Sheets Buffer</div>
+  </div>
+  <div class="det-rows">
+    <div class="det-row"><div class="det-k">TxID</div><div class="det-v" id="d-txid">—</div></div>
+    <div class="det-row"><div class="det-k">STATUS</div><div class="det-v" id="d-status">—</div></div>
+    <div class="det-row"><div class="det-k">FROM</div><div class="det-v" id="d-from">0xA3F7...9d2C</div></div>
+    <div class="det-row"><div class="det-k">TO / PAIR</div><div class="det-v" id="d-to">—</div></div>
+    <div class="det-row"><div class="det-k">TIMESTAMP</div><div class="det-v" id="d-ts">—</div></div>
+    <div class="det-row"><div class="det-k">FEE</div><div class="det-v">0.0012 XYR</div></div>
+    <div class="det-row"><div class="det-k">CONFIRMATIONS</div><div class="det-v" id="d-confirms">—</div></div>
+    <div class="det-row"><div class="det-k">ENCRYPTION</div><div class="det-v">X11-Nano · 15 layers</div></div>
+    <div class="det-row"><div class="det-k">BLOCK REF</div><div class="det-v" id="d-block">Pending Triple-Engine validation…</div></div>
+    <div class="det-row" id="d-sms-row" style="display:none;"><div class="det-k">SMS INSCRIBE</div><div class="det-v" id="d-sms">—</div></div>
+    <div class="det-row"><div class="det-k">VALIDATOR</div><div class="det-v">NCE · PEP · NLV</div></div>
+    <div class="det-row"><div class="det-k">SIGNATURE</div><div class="det-v" id="d-sig">X11_VAL_—</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     WALLET SETUP PAGE
+══════════════════════════════════════════════════════ -->
+<div class="page" id="pg-wallet-setup">
+  <div class="ph">
+    <button class="back" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="ph-title">Wallet Setup</div>
+  </div>
+
+  <!-- Mode selector -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px 22px 0;flex-shrink:0;">
+    <button onclick="setWalletMode('create')" id="wm-create" style="padding:13px;border:2px solid var(--t1);border-radius:var(--r);background:var(--t1);color:var(--w);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;transition:all .08s;">
+      Create New
+    </button>
+    <button onclick="setWalletMode('import')" id="wm-import" style="padding:13px;border:1px solid var(--b1);border-radius:var(--r);background:var(--w);color:var(--t2);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;transition:all .08s;">
+      Import Wallet
+    </button>
+  </div>
+
+  <!-- CREATE WALLET panel -->
+  <div id="ws-create-panel" style="padding:20px 22px;flex:1;display:flex;flex-direction:column;gap:14px;">
+    <div style="background:var(--pip-bg);border:1px solid var(--pip-b);border-radius:var(--r);padding:12px 14px;">
+      <div style="font-size:11px;font-weight:600;color:var(--pip);letter-spacing:.05em;margin-bottom:4px;">● XYRON BLOCKCHAIN — MAINNET</div>
+      <div style="font-size:12px;color:#15803d;line-height:1.5;">Wallet addresses are generated using X11-Nano hash + KECCAK-256. Format: <span style="font-family:var(--mono);">XYR-[32hex]</span></div>
+    </div>
+
+    <!-- Generated address display -->
+    <div style="border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;">
+      <div style="padding:10px 14px;background:var(--off);border-bottom:1px solid var(--b1);">
+        <div style="font-size:10px;letter-spacing:.07em;color:var(--t3);font-weight:500;">WALLET ADDRESS (PUBLIC)</div>
+      </div>
+      <div style="padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div style="font-size:12px;font-family:var(--mono);word-break:break-all;flex:1;font-weight:500;" id="ws-addr-out">Press generate to create address</div>
+        <button onclick="copyWsAddr()" style="width:32px;height:32px;border:1px solid var(--b1);border-radius:7px;background:var(--off);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Private Key display (hidden until generated) -->
+    <div id="ws-pk-wrap" style="border:1px solid var(--pip2-b);border-radius:var(--r);overflow:hidden;display:none;">
+      <div style="padding:10px 14px;background:var(--pip2-bg);border-bottom:1px solid var(--pip2-b);display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:10px;letter-spacing:.07em;color:var(--pip2);font-weight:600;">PRIVATE KEY — KEEP SECRET</div>
+          <div style="font-size:10px;color:#92400e;margin-top:2px;">Never share this with anyone</div>
+        </div>
+        <button onclick="togglePK()" id="pk-toggle-btn" style="font-size:11px;font-family:var(--font);padding:4px 10px;border:1px solid var(--pip2-b);border-radius:20px;background:var(--pip2-bg);color:#92400e;cursor:pointer;font-weight:500;">Show</button>
+      </div>
+      <div style="padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div style="font-size:12px;font-family:var(--mono);word-break:break-all;flex:1;font-weight:500;letter-spacing:.04em;" id="ws-pk-out">••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••</div>
+        <button onclick="copyPK()" style="width:32px;height:32px;border:1px solid var(--pip2-b);border-radius:7px;background:var(--pip2-bg);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Signature / X11 tag -->
+    <div id="ws-sig-wrap" style="display:none;padding:10px 14px;background:var(--off);border:1px solid var(--b1);border-radius:var(--r);">
+      <div style="font-size:10px;letter-spacing:.07em;color:var(--t3);font-weight:500;margin-bottom:5px;">X11-NANO SIGNATURE</div>
+      <div style="font-size:12px;font-family:var(--mono);color:var(--pip);font-weight:500;" id="ws-sig-out">—</div>
+    </div>
+
+    <button onclick="generateWallet()" id="ws-gen-btn" style="padding:16px;background:var(--t1);color:var(--w);border:none;border-radius:var(--r);font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:opacity .08s;letter-spacing:.02em;">
+      Generate XYRON Wallet
+    </button>
+
+    <div style="font-size:11px;color:var(--t3);text-align:center;line-height:1.6;">
+      Generated locally in browser. Private key is never transmitted.<br/>
+      Back up your private key in a secure location.
+    </div>
+  </div>
+
+  <!-- IMPORT WALLET panel -->
+  <div id="ws-import-panel" style="padding:20px 22px;flex:1;display:flex;flex-direction:column;gap:14px;display:none;">
+    <div style="background:var(--off);border:1px solid var(--b1);border-radius:var(--r);padding:12px 14px;">
+      <div style="font-size:11px;font-weight:600;color:var(--t2);letter-spacing:.05em;margin-bottom:4px;">IMPORT EXISTING WALLET</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.5;">Paste your XYRON private key or XYR address to import your wallet.</div>
+    </div>
+    <div class="fld">
+      <div class="flabel">PRIVATE KEY OR ADDRESS</div>
+      <textarea class="finput mono" id="ws-import-input" rows="3" placeholder="Paste private key (64 hex) or XYR address…" style="resize:none;height:80px;font-size:12px;line-height:1.6;"></textarea>
+    </div>
+    <button onclick="importWallet()" style="padding:16px;background:var(--t1);color:var(--w);border:none;border-radius:var(--r);font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:opacity .08s;">
+      Import Wallet
+    </button>
+    <div id="ws-import-result" style="display:none;border:1px solid var(--pip-b);border-radius:var(--r);padding:14px;background:var(--pip-bg);">
+      <div style="font-size:11px;font-weight:600;color:var(--pip);margin-bottom:6px;">● WALLET IMPORTED</div>
+      <div style="font-size:12px;font-family:var(--mono);word-break:break-all;color:var(--t1);font-weight:500;" id="ws-import-addr">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MY TRANSACTION EXPLORER PAGE (from Profile)
+══════════════════════════════════════════════════════ -->
+<div class="page" id="pg-mytxexp">
+  <div class="ph">
+    <button class="back" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="ph-title">My Transactions</div>
+    <div class="ph-sub" id="mte-count">— txs</div>
+  </div>
+
+  <!-- Filter pills -->
+  <div style="display:flex;gap:6px;padding:8px 22px 0;overflow-x:auto;scrollbar-width:none;flex-shrink:0;">
+    <button class="filter-btn on" onclick="mteFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="mteFilter('SEND',this)">Send</button>
+    <button class="filter-btn" onclick="mteFilter('RECEIVE',this)">Receive</button>
+    <button class="filter-btn" onclick="mteFilter('EXCHANGE',this)">Exchange</button>
+    <button class="filter-btn" onclick="mteFilter('PIP',this)">PIP</button>
+    <button class="filter-btn" onclick="mteFilter('FINALIZED',this)">Finalized</button>
+  </div>
+
+  <!-- Tx list by block -->
+  <div id="mte-list" style="flex:1;overflow-y:auto;padding:12px 22px 16px;"></div>
+</div>
+
+</div><!-- .app -->
+
+<!-- ══════════════════════════════════════════════════════
+     NODE CONFIG MODAL
+══════════════════════════════════════════════════════ -->
+<div class="tok-modal-ov" id="node-cfg-ov" onclick="closeNodeConfig(event)">
+  <div class="tok-modal" style="max-height:70vh;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px;border-bottom:1px solid var(--b1);position:sticky;top:0;background:var(--w);z-index:1;">
+      <div>
+        <div style="font-size:16px;font-weight:700;">XYRON Node</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px;" id="cfg-status-line">Status: connecting…</div>
+      </div>
+      <button onclick="closeNodeConfig()" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--b1);background:var(--off);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t1)" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="padding:18px 22px 28px;display:flex;flex-direction:column;gap:14px;">
+
+      <!-- Current URL status -->
+      <div id="cfg-live-card" style="padding:12px 14px;background:var(--off);border:1px solid var(--b1);border-radius:10px;">
+        <div style="font-size:10px;letter-spacing:.07em;color:var(--t3);font-weight:600;margin-bottom:5px;">CURRENT NODE URL</div>
+        <div style="font-size:12px;font-family:var(--mono);word-break:break-all;color:var(--t1);font-weight:500;" id="cfg-current-url">—</div>
+      </div>
+
+      <!-- Live stats from node -->
+      <div id="cfg-node-stats" style="display:none;border:1px solid var(--pip-b);border-radius:10px;overflow:hidden;background:var(--pip-bg);">
+        <div style="padding:10px 14px;border-bottom:1px solid var(--pip-b);font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--pip);">● NODE ONLINE — LIVE DATA</div>
+        <div id="cfg-stats-rows" style="padding:4px 0;"></div>
+      </div>
+
+      <!-- URL input -->
+      <div>
+        <div style="font-size:11px;letter-spacing:.07em;color:var(--t3);font-weight:600;margin-bottom:7px;">SET NODE URL</div>
+        <div style="position:relative;">
+          <input id="cfg-url-input" type="url" class="finput mono"
+            placeholder="https://your-codespace-3000.app.github.dev"
+            style="font-size:12px;padding-right:90px;"
+            value=""
+          />
+          <button onclick="testAndSaveNodeUrl()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);padding:5px 12px;background:var(--t1);color:var(--w);border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;">Connect</button>
+        </div>
+      </div>
+
+      <!-- Quick connect info -->
+      <div style="background:var(--off);border:1px solid var(--b1);border-radius:10px;padding:13px 14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px;">Cara mendapatkan URL node:</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.7;">
+          1. Buka repo XYRON di GitHub Codespaces<br/>
+          2. Jalankan server XYRON (port 3000)<br/>
+          3. Copy URL dari panel "Ports" Codespaces<br/>
+          4. Paste URL di atas → tekan Connect<br/>
+          <span style="color:var(--t3);font-size:11px;">Format: https://[nama-codespace]-3000.app.github.dev</span>
+        </div>
+      </div>
+
+      <!-- Reset to default -->
+      <button onclick="resetNodeUrl()" style="padding:12px;border:1px solid var(--b1);border-radius:10px;background:var(--w);color:var(--t2);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);">
+        Reset to default URL
+      </button>
+    </div>
+  </div>
+</div>
+<div class="tok-modal-ov" id="tok-modal-ov" onclick="closeTokModal(event)">
+  <div class="tok-modal" id="tok-modal-body">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 12px;border-bottom:1px solid var(--b1);position:sticky;top:0;background:var(--w);z-index:1;">
+      <div>
+        <div style="font-size:16px;font-weight:700;" id="tokm-title">Tokenomics Detail</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px;" id="tokm-sub">XYRON V.2</div>
+      </div>
+      <button onclick="closeTokModal()" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--b1);background:var(--off);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t1)" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <!-- Dynamic content -->
+    <div id="tokm-content" style="padding:16px 22px 32px;"></div>
+  </div>
+</div>
+
+<!-- Sync Overlay -->
+<div class="sync-ov" id="sync-ov">
+  <div class="sync-ring"></div>
+  <div class="sync-title">Syncing to Cloud<span class="sync-dots"><span>.</span><span>.</span><span>.</span></span></div>
+  <div class="sync-sub" id="sync-sub">Writing to Hot Storage</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="t-dot"></div>
+  <span id="toast-txt">PIP — Transaction buffered</span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════
+// XYRON BLOCKCHAIN — REAL DATA LAYER
+// API: GET /health · /tokenomics · /blocks · /blocks/:n · /stats
+// POST /xyron/validate   (wallet + SMS inscribe)
+// Node: Replit deployment of masojie/XYRON-Crypto-V.2
+// Fallback: local seed data when node is offline
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Configuration ─────────────────────────────────────────────────────────────
+// XYRON node URL — disimpan di sessionStorage agar persisten selama sesi.
+// User bisa ubah via tombol ⚙ di topbar.
+const XYRON_NODE = {
+  // ┌─────────────────────────────────────────────────────────────────────────┐
+  // │  XYRON node URL (GitHub Codespaces):                                    │
+  // │  'https://congenial-succotash-pjqwpjxj4456h5gw-3000.app.github.dev'    │
+  // └─────────────────────────────────────────────────────────────────────────┘
+  defaultUrl: 'https://congenial-succotash-pjqwpjxj4456h5gw-3000.app.github.dev',
+  get base()    { return sessionStorage.getItem('xyron_node_url') || this.defaultUrl; },
+  set base(url) { sessionStorage.setItem('xyron_node_url', url.replace(/\/$/, '')); },
+  timeout: 6000,
+};
+
+// ── API Client ────────────────────────────────────────────────────────────────
+const XyronAPI = {
+  _online: null, // null=unknown, true=live, false=offline
+
+  async _fetch(path, opts = {}) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), XYRON_NODE.timeout);
+    const t0 = Date.now();
+    try {
+      const res = await fetch(XYRON_NODE.base + path, {
+        ...opts,
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json', ...(opts.headers||{}) },
+      });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      this._online = true;
+      this._lastLatency = Date.now() - t0;
+      return await res.json();
+    } catch (e) {
+      clearTimeout(timer);
+      this._online = false;
+      this._lastLatency = null;
+      return null;
+    }
+  },
+
+  async health()      { return this._fetch('/health'); },
+  async tokenomics()  { return this._fetch('/tokenomics'); },
+  async blocks(n=20)  { return this._fetch('/blocks?limit=' + n); },
+  async block(num)    { return this._fetch('/blocks/' + num); },
+  async stats()       { return this._fetch('/stats'); },
+
+  async validate(walletId, message = '') {
+    return this._fetch('/xyron/validate', {
+      method: 'POST',
+      body: JSON.stringify({ wallet_id: walletId, message }),
+    });
+  },
+
+  isOnline() { return this._online === true; },
+};
+
+// ── Seed / Fallback Data (from README spec) ───────────────────────────────────
+const XYRON_SEED = {
+  MAX_SUPPLY:   12614400,
+  BLOCK_REWARD: 36,
+  BLOCK_TIME:   180,
+  HALVING:      175200,
+  DEVELOPER:    'M Fauzi Nizam',
+  NODE:         'Blitar, East Java, Indonesia',
+};
+
+// ── DB (live data + fallback) ─────────────────────────────────────────────────
+const DB = {
+  txs: [
+    {txId:'XYR-LJT2X-K8P',userId:'0xA3F7...9d2C',to:'0xB9C2...3aF1',amount:'120.00',type:'SEND',status:'PIP',timestamp:'2025-03-22T08:14:00Z',blockRef:'',sms:'',sig:'X11_VAL_8F2A9C'},
+    {txId:'XYR-LJQ8Y-R3F',userId:'0xA3F7...9d2C',to:'USDT',amount:'350.50',type:'EXCHANGE',status:'FINALIZED',timestamp:'2025-03-21T17:33:00Z',blockRef:'0xBLK9A2F3E1',sms:'',sig:'X11_VAL_CC13D7'},
+    {txId:'XYR-LJN4Z-W7T',userId:'0xA3F7...9d2C',to:'0xA3F7...9d2C',amount:'60.00',type:'RECEIVE',status:'FINALIZED',timestamp:'2025-03-20T12:01:00Z',blockRef:'0xBLK8E1A99F',sms:'Hello XYRON!',sig:'X11_VAL_AA72B9'},
+  ],
+  blocks: [
+    {num:59,hash:'0x9F3A2...E1B',txs:3,validators:5,reward:36,time:'2025-03-22T08:15:00Z',status:'PIP'},
+    {num:58,hash:'0x7C1D8...3FA',txs:2,validators:4,reward:36,time:'2025-03-22T08:12:00Z',status:'PIP'},
+    {num:57,hash:'0x4B9E6...C2D',txs:0,validators:3,reward:0,time:'2025-03-22T08:09:00Z',status:'PIP PIP'},
+    {num:56,hash:'0x2A7F1...9EA',txs:5,validators:6,reward:36,time:'2025-03-22T08:06:00Z',status:'PIP'},
+    {num:55,hash:'0x1D4C3...7FB',txs:1,validators:4,reward:36,time:'2025-03-22T08:03:00Z',status:'PIP'},
+  ],
+  tokenomics: null,  // populated by API
+  stats:      null,  // populated by API
+  activeUserId: '0xA3F7...9d2C',
+  nodeStatus: 'connecting', // 'live' | 'offline' | 'connecting'
+};
+
+// ── Map API response → wallet block format ────────────────────────────────────
+function mapApiBlock(b) {
+  // XYRON node returns: { number, hash, transactions, validators, reward, timestamp, status, sms }
+  const num = b.number ?? b.block_number ?? b.num ?? 0;
+  const txArr = Array.isArray(b.transactions) ? b.transactions : [];
+  const hasTx = txArr.length > 0 || (b.transactions_count ?? 0) > 0;
+  return {
+    num,
+    hash:       b.hash ?? ('0x' + num.toString(16).padStart(8,'0').toUpperCase() + '...'),
+    txs:        txArr.length || b.transactions_count || 0,
+    validators: b.validators ?? b.validator_count ?? 4,
+    reward:     b.reward ?? (hasTx ? XYRON_SEED.BLOCK_REWARD : 0),
+    time:       b.timestamp ?? b.created_at ?? new Date().toISOString(),
+    status:     b.status ?? (hasTx ? 'PIP' : 'PIP PIP'),
+    sms:        b.sms_count > 0 ? `${b.sms_count} SMS inscribed` : '',
+    size:       b.size ?? ((Math.random()*2+.5).toFixed(2)+' KB'),
+    nonce:      b.nonce ?? Math.floor(Math.random()*999999),
+    rawTxs:     txArr,
+  };
+}
+
+function mapApiTx(t, walletId) {
+  // XYRON node /xyron/validate response or block tx object
+  const type = (t.type ?? 'SEND').toUpperCase();
+  return {
+    txId:      t.tx_id ?? t.txId ?? t.signature ?? ('XYR-' + Date.now().toString(36).toUpperCase()),
+    userId:    t.wallet_id ?? t.userId ?? walletId ?? DB.activeUserId,
+    to:        t.to ?? t.recipient ?? '—',
+    amount:    String(parseFloat(t.amount ?? t.value ?? 0).toFixed(2)),
+    type,
+    status:    t.status === 'PIP' || t.status === 'PIP PIP' ? t.status : (t.finalized ? 'FINALIZED' : 'PIP'),
+    timestamp: t.timestamp ?? t.created_at ?? new Date().toISOString(),
+    blockRef:  t.block_hash ?? t.blockRef ?? '',
+    sms:       t.message ?? t.sms ?? '',
+    sig:       t.signature ?? t.x11_signature ?? ('X11_VAL_' + Math.random().toString(16).substr(2,6).toUpperCase()),
+  };
+}
+
+// ── Node Status Indicator ─────────────────────────────────────────────────────
+function setNodeStatus(status) {
+  DB.nodeStatus = status;
+  const pipEl  = document.getElementById('pip-status-txt');
+  const dotEl  = document.querySelector('.pip-dot');
+  const cfgLine = document.getElementById('cfg-status-line');
+  if (status === 'live') {
+    if (pipEl) { pipEl.textContent = 'LIVE'; pipEl.style.color = 'var(--pip)'; }
+    if (dotEl) { dotEl.style.background = 'var(--pip)'; }
+    if (cfgLine) cfgLine.textContent = '● Node online — real data active';
+    if (cfgLine) cfgLine.style.color = 'var(--pip)';
+  } else if (status === 'offline') {
+    if (pipEl) { pipEl.textContent = 'LOCAL'; pipEl.style.color = 'var(--pip2)'; }
+    if (dotEl) { dotEl.style.background = 'var(--pip2)'; }
+    if (cfgLine) cfgLine.textContent = '○ Node offline — using local data';
+    if (cfgLine) cfgLine.style.color = 'var(--pip2)';
+  } else {
+    if (pipEl) { pipEl.textContent = 'SYNC…'; pipEl.style.color = 'var(--t3)'; }
+    if (cfgLine) cfgLine.textContent = '⟳ Connecting to node…';
+  }
+}
+
+// ── Boot: Fetch real data from XYRON node ────────────────────────────────────
+async function bootXyronNode() {
+  setNodeStatus('connecting');
+
+  // 1. Health check
+  const health = await XyronAPI.health();
+  if (!health) { setNodeStatus('offline'); return; }
+
+  setNodeStatus('live');
+  showToast('PIP — Connected to XYRON node (' + (XyronAPI._lastLatency||0) + 'ms)');
+
+  // 2. Tokenomics
+  const tok = await XyronAPI.tokenomics();
+  if (tok) {
+    DB.tokenomics = tok;
+    // Patch live tokenomics into the UI display values
+    const circ = tok.circulating_supply ?? tok.circulatingSupply ?? tok.minted ?? null;
+    const total = tok.total_blocks ?? tok.totalBlocks ?? null;
+    if (circ !== null) {
+      document.querySelectorAll('[data-live="circulating"]').forEach(el => {
+        el.textContent = Number(circ).toLocaleString();
+      });
+    }
+    if (total !== null) {
+      document.querySelectorAll('[data-live="totalblocks"]').forEach(el => {
+        el.textContent = Number(total).toLocaleString();
+      });
+    }
+  }
+
+  // 3. Stats
+  const stats = await XyronAPI.stats();
+  if (stats) { DB.stats = stats; }
+
+  // 4. Blocks — replace DB.blocks with live data
+  const blocksRes = await XyronAPI.blocks(20);
+  if (blocksRes) {
+    const arr = Array.isArray(blocksRes) ? blocksRes
+      : (blocksRes.blocks ?? blocksRes.data ?? []);
+    if (arr.length) {
+      DB.blocks = arr.map(mapApiBlock).sort((a,b) => b.num - a.num);
+      // Re-render if explorer is open
+      if (activePage === 'history') renderTabExplorer();
+    }
+  }
+
+  // 5. Update chain stats bar
+  syncChainStats();
+}
+
+function syncChainStats() {
+  const latest = DB.blocks[0];
+  if (!latest) return;
+  const teB = document.getElementById('te-blocks');
+  const teM = document.getElementById('te-minted');
+  const teT = document.getElementById('te-txs');
+  if (teB) teB.textContent = latest.num;
+  if (teM) teM.textContent = DB.blocks.reduce((s,b)=>s+b.reward,0).toLocaleString();
+  if (teT) teT.textContent = DB.txs.length;
+}
+
+// ── Real API call on Send / Exchange (POST /xyron/validate) ───────────────────
+async function validateWithNode(walletId, smsMessage = '') {
+  if (!XyronAPI.isOnline()) return null;
+  const res = await XyronAPI.validate(walletId, smsMessage);
+  if (res) return mapApiTx(res, walletId);
+  return null;
+}
+
+let histFilter = 'all';
+let navStack = [];
+let activePage = 'home';
+
+// ─── Navigation ───────────────────────────────────────────────────────────────
+const PAGES = ['home','history','assets','profile','send','exchange','explorer','detail','wallet-setup','mytxexp'];
+const TAB_PAGES = ['home','history','assets','profile'];
+
+function go(page, data) {
+  if (page === activePage) return;
+  const curr = document.getElementById('pg-' + activePage);
+  const next = document.getElementById('pg-' + page);
+  if (!next) return;
+  curr.classList.add('exit');
+  setTimeout(() => curr.classList.remove('active','exit'), 120);
+  next.classList.add('active');
+  navStack.push(activePage);
+  activePage = page;
+  if (data) {
+    if (page === 'detail') renderDetail(data);
+  }
+  if (page === 'explorer') renderExplorer();
+}
+
+function goBack() {
+  if (navStack.length === 0) return;
+  const prev = navStack.pop();
+  const curr = document.getElementById('pg-' + activePage);
+  const back = document.getElementById('pg-' + prev);
+  curr.classList.remove('active');
+  back.classList.add('active');
+  back.classList.remove('exit');
+  activePage = prev;
+}
+
+function switchTab(tab) {
+  // Remove active from all top-level pages
+  TAB_PAGES.forEach(p => {
+    const el = document.getElementById('pg-' + p);
+    if (el) el.classList.remove('active','exit');
+  });
+  // Also remove active from sub-pages
+  ['send','exchange','explorer','detail','wallet-setup','mytxexp'].forEach(p => {
+    const el = document.getElementById('pg-' + p);
+    if (el) el.classList.remove('active','exit');
+  });
+  document.getElementById('pg-' + tab).classList.add('active');
+  activePage = tab;
+  navStack = [];
+
+  // Update nav buttons across all navbars
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.classList.toggle('on', btn.dataset.tab === tab);
+  });
+
+  if (tab === 'history') { renderTabExplorer(); }
+  if (tab === 'assets') {/* already static */}
+  if (tab === 'profile') updateProfile();
+}
+
+// ─── TX Rendering ─────────────────────────────────────────────────────────────
+function statusClass(s) {
+  if (s === 'PIP') return 'st-pip';
+  if (s === 'PIP PIP') return 'st-buf';
+  return 'st-fin';
+}
+
+function txIcon(type) {
+  const strokeColor = type === 'RECEIVE' ? 'var(--pip)' : 'var(--t2)';
+  const paths = {
+    SEND: '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
+    EXCHANGE: '<path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>',
+    RECEIVE: '<line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>',
+  };
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="${strokeColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">${paths[type]||paths.SEND}</svg>`;
+}
+
+function renderTxItem(tx, onclick) {
+  const isOut = tx.type !== 'RECEIVE';
+  const amtColor = tx.type === 'RECEIVE' ? 'style="color:var(--pip)"' : '';
+  return `<div class="tx-item" onclick="${onclick}">
+    <div class="tx-l">
+      <div class="tx-ico">${txIcon(tx.type)}</div>
+      <div>
+        <div class="tx-name">${cap(tx.type)}</div>
+        <div class="tx-meta">${fmtTs(tx.timestamp)}</div>
+      </div>
+    </div>
+    <div class="tx-r">
+      <div class="tx-amt" ${amtColor}>${isOut?'-':'+'} ${parseFloat(tx.amount).toFixed(2)} XYR</div>
+      <div class="tx-st ${statusClass(tx.status)}">${tx.status}</div>
+    </div>
+  </div>`;
+}
+
+function renderHomeTxList() {
+  document.getElementById('home-txlist').innerHTML =
+    DB.txs.slice(0,4).map(t => renderTxItem(t, `openTx('${t.txId}')`)).join('');
+}
+
+function renderHistList(filter) {
+  histFilter = filter;
+  const list = filter === 'all'
+    ? DB.txs
+    : DB.txs.filter(t => t.type === filter || t.status === filter);
+  const el = document.getElementById('hist-txlist');
+  el.innerHTML = list.length
+    ? list.map(t => renderTxItem(t, `openTx('${t.txId}')`)).join('')
+    : '<div style="padding:40px 0;text-align:center;color:var(--t3);font-size:14px;">No transactions</div>';
+}
+
+function filterTx(f, btn) {
+  document.querySelectorAll('#hist-filters .filter-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderHistList(f);
+}
+
+function openTx(txId) {
+  const tx = DB.txs.find(t => t.txId === txId);
+  if (!tx) return;
+  go('detail', tx);
+}
+
+// ─── Detail ───────────────────────────────────────────────────────────────────
+function renderDetail(tx) {
+  document.getElementById('d-type').textContent = tx.type;
+  document.getElementById('d-amt').innerHTML = `${parseFloat(tx.amount).toFixed(2)}<em>XYR</em>`;
+  document.getElementById('d-txid').textContent = tx.txId;
+  document.getElementById('d-ts').textContent = fmtTsFull(tx.timestamp);
+  document.getElementById('d-to').textContent = tx.type === 'EXCHANGE' ? 'USDT (Exchange)' : (tx.to || '—');
+  document.getElementById('d-block').textContent = tx.blockRef || 'Pending Triple-Engine validation…';
+  document.getElementById('d-sig').textContent = tx.sig || 'X11_VAL_—';
+
+  // ── Confirmation Tier Logic (synced from XYRON repo) ──────────────────────
+  // RECEIVE (internal/standard)  → 3 confirmations required
+  // SEND (wallet-to-wallet)      → 6 confirmations required
+  // EXCHANGE (to exchange/high)  → 9 confirmations required
+  const confTier = { RECEIVE: 3, SEND: 6, EXCHANGE: 9 };
+  const confRequired = confTier[tx.type] || 6;
+  const confTierLabel = tx.type === 'RECEIVE'
+    ? 'Standard (3 req)' : tx.type === 'EXCHANGE'
+    ? 'High-value (9 req)' : 'Wallet-to-wallet (6 req)';
+
+  const confEl = document.getElementById('d-confirms');
+  function renderConfBar(current, required, label) {
+    const pct = Math.min(100, Math.round((current / required) * 100));
+    const color = current >= required ? 'var(--pip)' : current > 0 ? 'var(--pip2)' : 'var(--b2)';
+    const dots = Array.from({length: required}, (_, i) =>
+      `<div style="width:${Math.floor(196/required)-3}px;height:5px;border-radius:3px;background:${i < current ? color : 'var(--b1)'};transition:background .3s;"></div>`
+    ).join('');
+    return `<div>
+      <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:6px;">
+        <span style="font-family:var(--mono);font-size:14px;font-weight:600;color:${color};">${current}/${required}</span>
+        <span style="font-size:10px;color:var(--t3);">${label}</span>
+      </div>
+      <div style="display:flex;gap:3px;margin-bottom:4px;">${dots}</div>
+    </div>`;
+  }
+
+  if (tx.status === 'FINALIZED') {
+    confEl.innerHTML = renderConfBar(confRequired, confRequired, confTierLabel + ' · ✓ confirmed');
+  } else if (tx.status === 'PIP') {
+    let c = 1;
+    confEl.innerHTML = renderConfBar(c, confRequired, confTierLabel + ' · validating…');
+    const confTimer = setInterval(() => {
+      c++;
+      const fresh = document.getElementById('d-confirms');
+      if (fresh) fresh.innerHTML = renderConfBar(c, confRequired, confTierLabel + ' · validating…');
+      if (c >= confRequired) clearInterval(confTimer);
+    }, 600);
+  } else {
+    confEl.innerHTML = renderConfBar(0, confRequired, confTierLabel + ' · buffering');
+  }
+
+  if (tx.sms) {
+    document.getElementById('d-sms-row').style.display = '';
+    document.getElementById('d-sms').textContent = tx.sms + ' (X11-Nano encrypted)';
+  }
+
+  const statusEl = document.getElementById('d-status');
+  const cls = tx.status === 'PIP' ? 'sc-pip' : tx.status === 'PIP PIP' ? 'sc-buf' : 'sc-fin';
+  const dotCls = tx.status === 'PIP' ? 'scd-pip' : tx.status === 'PIP PIP' ? 'scd-buf' : 'scd-fin';
+  statusEl.innerHTML = `<span class="status-chip ${cls}"><span class="sc-dot ${dotCls}"></span>${tx.status}</span>`;
+
+  if (tx.status === 'PIP') {
+    setTimeout(() => pollFinalize(tx.txId), 3500);
+  }
+}
+
+async function pollFinalize(txId) {
+  const tx = DB.txs.find(t => t.txId === txId);
+  if (!tx || tx.status === 'FINALIZED') return;
+
+  // Try live node for latest block
+  if (XyronAPI.isOnline()) {
+    const latest = DB.blocks[0];
+    if (latest) {
+      const liveBlock = await XyronAPI.block(latest.num);
+      if (liveBlock) {
+        tx.blockRef = liveBlock.hash ?? ('0xBLK' + latest.num.toString(16).toUpperCase());
+        tx.sig = liveBlock.signature ?? ('X11_VAL_' + Math.random().toString(16).substr(2,6).toUpperCase());
+      }
+    }
+  }
+
+  if (!tx.blockRef) {
+    tx.blockRef = '0xBLK' + Math.random().toString(16).substr(2,8).toUpperCase();
+    tx.sig = 'X11_VAL_' + Math.random().toString(16).substr(2,6).toUpperCase();
+  }
+  tx.status = 'FINALIZED';
+
+  if (activePage === 'detail') {
+    renderDetail(tx);
+    showToast('PIP — Block reference assigned');
+  }
+  renderHomeTxList();
+}
+
+// ─── Explorer ─────────────────────────────────────────────────────────────────
+function renderExplorer() {
+  const latest = DB.blocks[0];
+  document.getElementById('exp-blockcount').textContent = 'Block #' + latest.num;
+  document.getElementById('exp-totalblocks').textContent = latest.num;
+  document.getElementById('exp-totaltxs').textContent = DB.txs.length;
+  document.getElementById('exp-lasttime').textContent = fmtTs(latest.time);
+
+  renderBlockCards(DB.blocks);
+}
+
+function renderBlockCards(blocks) {
+  document.getElementById('exp-blocks').innerHTML = blocks.map(b => {
+    const sc = b.status === 'PIP' ? 'sc-pip' : 'sc-buf';
+    const dotC = b.status === 'PIP' ? 'scd-pip' : 'scd-buf';
+    return `<div class="block-card fade-in">
+      <div class="block-head">
+        <div class="block-num">Block #${b.num}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="status-chip ${sc}" style="font-size:10px;padding:3px 8px;"><span class="sc-dot ${dotC}"></span>${b.status}</span>
+          <div class="block-time">${fmtTs(b.time)}</div>
+        </div>
+      </div>
+      <div class="block-rows">
+        <div class="dr"><span class="dr-k">Hash</span><span class="dr-v">${b.hash}</span></div>
+        <div class="dr"><span class="dr-k">Transactions</span><span class="dr-v">${b.txs}</span></div>
+        <div class="dr"><span class="dr-k">Validators</span><span class="dr-v">${b.validators} active</span></div>
+        <div class="dr"><span class="dr-k">Block Reward</span><span class="dr-v">${b.reward} XYR</span></div>
+        <div class="dr"><span class="dr-k">Encryption</span><span class="dr-v">X11-Nano · 15 layers</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function searchExplorer(val) {
+  if (!val) { renderBlockCards(DB.blocks); return; }
+  const v = val.toLowerCase();
+  // Search blocks by number or hash
+  const filtered = DB.blocks.filter(b =>
+    String(b.num).includes(v) || b.hash.toLowerCase().includes(v)
+  );
+  // Also search txs
+  const txMatch = DB.txs.filter(t => t.txId.toLowerCase().includes(v));
+  if (txMatch.length && activePage === 'explorer') {
+    // Show tx result
+    document.getElementById('exp-blocks').innerHTML = txMatch.map(tx => {
+      return `<div class="block-card fade-in" onclick="openTx('${tx.txId}')" style="cursor:pointer;">
+        <div class="block-head">
+          <div class="block-num" style="font-size:12px;">${tx.txId}</div>
+          <div style="font-size:11px;color:var(--t3);">${tx.type}</div>
+        </div>
+        <div class="block-rows">
+          <div class="dr"><span class="dr-k">Amount</span><span class="dr-v">${tx.amount} XYR</span></div>
+          <div class="dr"><span class="dr-k">Status</span><span class="dr-v">${tx.status}</span></div>
+          <div class="dr"><span class="dr-k">Time</span><span class="dr-v">${fmtTs(tx.timestamp)}</span></div>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    renderBlockCards(filtered.length ? filtered : DB.blocks);
+  }
+}
+
+// ─── Send Handler ─────────────────────────────────────────────────────────────
+async function handleSend() {
+  const to = document.getElementById('send-to').value.trim();
+  const amt = document.getElementById('send-amt').value.trim();
+  const sms = document.getElementById('send-sms').value.trim();
+  if (!to || !amt || parseFloat(amt) <= 0) { showToast('Please fill all required fields'); return; }
+
+  const btn = document.getElementById('btn-send');
+  btn.disabled = true; btn.textContent = 'Processing…';
+  showSync('Writing to Hot Storage · X11-Nano encrypting');
+
+  await sleep(2300);
+
+  // Try real XYRON node first
+  let tx = null;
+  if (XyronAPI.isOnline()) {
+    showSync('Validating via XYRON Triple-Engine…');
+    tx = await validateWithNode(DB.activeUserId || '0xA3F7...9d2C', sms);
+    if (tx) {
+      tx.to = to;
+      tx.type = 'SEND';
+      tx.amount = parseFloat(amt).toFixed(2);
+    }
+  }
+  // Fallback to local
+  if (!tx) {
+    tx = mkTx({ userId: DB.activeUserId || '0xA3F7...9d2C', to, amount:parseFloat(amt).toFixed(2), type:'SEND', sms });
+  }
+  DB.txs.unshift(tx);
+
+  hideSync();
+  showToast('PIP — Transaction buffered to Sheets');
+  document.getElementById('send-to').value='';
+  document.getElementById('send-amt').value='';
+  document.getElementById('send-sms').value='';
+  btn.disabled=false; btn.textContent='Send Transaction';
+  renderHomeTxList();
+  go('detail', tx);
+}
+
+async function handleExchange() {
+  const amt = document.getElementById('exc-amt').value.trim();
+  if (!amt || parseFloat(amt) <= 0) { showToast('Enter an amount'); return; }
+
+  const btn = document.getElementById('btn-exc');
+  btn.disabled=true; btn.textContent='Processing…';
+  showSync('Routing via PEP · Nexus Parallel-Stream');
+
+  await sleep(2500);
+
+  let tx = null;
+  if (XyronAPI.isOnline()) {
+    showSync('Routing via XYRON PEP · Nexus Parallel-Stream…');
+    tx = await validateWithNode(DB.activeUserId || '0xA3F7...9d2C', 'EXCHANGE:USDT');
+    if (tx) { tx.to = 'USDT'; tx.type = 'EXCHANGE'; tx.amount = parseFloat(amt).toFixed(2); }
+  }
+  if (!tx) {
+    tx = mkTx({ userId: DB.activeUserId || '0xA3F7...9d2C', to:'USDT', amount:parseFloat(amt).toFixed(2), type:'EXCHANGE', sms:'' });
+  }
+  DB.txs.unshift(tx);
+
+  hideSync();
+  showToast('PIP — Exchange buffered to Sheets');
+  document.getElementById('exc-amt').value='';
+  document.getElementById('exc-out').textContent='0.00 USDT';
+  btn.disabled=false; btn.textContent='Confirm Exchange';
+  renderHomeTxList();
+  go('detail', tx);
+}
+
+function mkTx({userId,to,amount,type,sms}) {
+  const ts = Date.now().toString(36).toUpperCase();
+  const rnd = Math.random().toString(36).substr(2,3).toUpperCase();
+  return { txId:`XYR-${ts}-${rnd}`, userId, to, amount, type, status:'PIP', timestamp:new Date().toISOString(), blockRef:'', sms:sms||'', sig:`X11_VAL_${Math.random().toString(16).substr(2,6).toUpperCase()}` };
+}
+
+// ─── Profile ──────────────────────────────────────────────────────────────────
+function updateProfile() {
+  document.getElementById('prof-txcount').textContent = DB.txs.length;
+}
+
+// ─── Exchange calc ────────────────────────────────────────────────────────────
+function calcExc() {
+  const v = parseFloat(document.getElementById('exc-amt').value)||0;
+  const tok = document.getElementById('exc-to').textContent;
+  const rates = {USDT:2.578,ETH:0.000762,BTC:0.0000214};
+  const r = rates[tok]||2.578;
+  document.getElementById('exc-out').textContent = (v*r).toFixed(4)+' '+tok;
+}
+function flipTokens() {
+  const el = document.getElementById('exc-to');
+  const opts = ['USDT','ETH','BTC'];
+  const i = opts.indexOf(el.textContent);
+  el.textContent = opts[(i+1)%opts.length];
+  calcExc();
+}
+
+// ─── Sync / Toast ─────────────────────────────────────────────────────────────
+function showSync(msg) {
+  document.getElementById('sync-sub').textContent=msg;
+  document.getElementById('sync-ov').classList.add('on');
+}
+function hideSync() { document.getElementById('sync-ov').classList.remove('on'); }
+let toastT;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-txt').textContent=msg;
+  t.classList.add('on');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('on'),3200);
+}
+
+// ─── Utils ────────────────────────────────────────────────────────────────────
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function cap(s){return s.charAt(0)+s.slice(1).toLowerCase();}
+function fmtTs(iso){
+  const d=new Date(iso);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' · '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+}
+function fmtTsFull(iso){
+  return new Date(iso).toISOString().replace('T',' ').slice(0,19)+' UTC';
+}
+function copyAddr(){ showToast('Address copied'); }
+
+// ─── Generate rich block data (20 blocks) ────────────────────────────────────
+(function seedBlocks() {
+  const hashes = ['0x9F3A2','0x7C1D8','0x4B9E6','0x2A7F1','0x1D4C3','0xE8B2A','0xD3F91','0xC6E04','0xB1A75','0xA7D3E','0x98C2F','0x87B1E','0x76A0D','0x659FC','0x548EB','0x437DA','0x326C9','0x215B8','0x104A7','0x0F396'];
+  const suf    = ['E1B','3FA','C2D','9EA','7FB','6DC','5CB','4BA','3A9','2F8','1E7','0D6','FC5','EB4','DA3','C92','B81','A70','96F','85E'];
+  for (let i = 0; i < 20; i++) {
+    if (DB.blocks.find(b => b.num === 59 - i)) continue;
+    const hasTx = Math.random() > .25;
+    DB.blocks.push({
+      num: 59 - i,
+      hash: hashes[i] + '...' + suf[i],
+      txs: hasTx ? Math.floor(Math.random() * 6) + 1 : 0,
+      validators: 3 + Math.floor(Math.random() * 4),
+      reward: hasTx ? 6 : 0,
+      time: new Date(Date.now() - i * 180000).toISOString(),
+      status: hasTx ? 'PIP' : 'PIP PIP',
+      sms: i % 5 === 0 ? 'XYRON heartbeat #' + (59-i) : '',
+      size: (Math.random() * 2 + 0.5).toFixed(2) + ' KB',
+      nonce: Math.floor(Math.random() * 999999),
+    });
+  }
+  DB.blocks.sort((a,b) => b.num - a.num);
+})();
+
+// ─── Tab Block Explorer — XYRON Chain (20 blocks, compact) ───────────────────
+function renderTabExplorer(blocksToShow) {
+  const blocks = blocksToShow || DB.blocks;
+  const latest = DB.blocks[0];
+
+  const teB = document.getElementById('te-blocks');
+  const teT = document.getElementById('te-txs');
+  const teM = document.getElementById('te-minted');
+  if (teB) teB.textContent = latest ? latest.num : '—';
+  if (teT) teT.textContent = DB.txs.length;
+  if (teM) teM.textContent = DB.blocks.reduce((s,b)=>s+b.reward,0).toLocaleString();
+
+  const el = document.getElementById('tab-exp-list');
+  if (!el) return;
+  if (!blocks.length) { el.innerHTML='<div style="padding:40px 0;text-align:center;color:var(--t3);font-size:13px;">No blocks</div>'; return; }
+
+  el.innerHTML = blocks.map(b => {
+    const hasTx = b.txs > 0;
+    const sc    = b.status === 'PIP' ? 'sc-pip' : 'sc-buf';
+    const dotC  = b.status === 'PIP' ? 'scd-pip' : 'scd-buf';
+    return `<div onclick="openBlockDetail(${b.num})" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;margin-bottom:6px;border:1px solid var(--b1);border-radius:10px;cursor:pointer;background:var(--w);transition:opacity .08s;" onmouseenter="this.style.opacity='.75'" onmouseleave="this.style.opacity='1'">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+        <div style="width:32px;height:32px;border-radius:7px;background:var(--off);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="2"><rect x="2" y="3" width="8" height="8" rx="1"/><rect x="14" y="3" width="8" height="8" rx="1"/><rect x="2" y="13" width="8" height="8" rx="1"/><rect x="14" y="13" width="8" height="8" rx="1"/></svg>
+        </div>
+        <div style="min-width:0;">
+          <div style="font-size:13px;font-weight:700;font-family:var(--mono);">Block #${b.num}</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:1px;font-family:var(--mono);">${fmtTs(b.time)} · ${b.validators} validators</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;margin-left:8px;">
+        <span class="status-chip ${sc}" style="font-size:9px;padding:2px 7px;"><span class="sc-dot ${dotC}"></span>${b.status}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:10px;color:var(--t3);font-family:var(--mono);">${b.txs} tx${b.txs!==1?'s':''}</span>
+          <span style="font-size:10px;font-family:var(--mono);color:${hasTx?'var(--pip)':'var(--t3)'};">${b.reward} XYR</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Open Block Detail (Explorer drill-down) ──────────────────────────────────
+function openBlockDetail(blockNum) {
+  const b = DB.blocks.find(x => x.num === blockNum);
+  if (!b) return;
+  const wrap = document.getElementById('blk-detail-wrap');
+  wrap.style.display = 'block';
+
+  document.getElementById('bd-title').textContent = 'Block #' + b.num;
+  document.getElementById('bd-hash').textContent  = b.hash;
+
+  const sc   = b.status === 'PIP' ? 'sc-pip' : 'sc-buf';
+  const dotC = b.status === 'PIP' ? 'scd-pip' : 'scd-buf';
+  document.getElementById('bd-pip').innerHTML =
+    `<span class="status-chip ${sc}" style="font-size:10px;padding:3px 8px;"><span class="sc-dot ${dotC}"></span>${b.status}</span>`;
+
+  document.getElementById('bd-meta-rows').innerHTML = [
+    ['Block',      '#' + b.num],
+    ['Timestamp',  fmtTsFull(b.time)],
+    ['Validators', b.validators + ' nodes'],
+    ['Reward',     b.reward + ' XYR'],
+    ['Size',       b.size || '—'],
+    ['Nonce',      b.nonce || '—'],
+    ['Encryption', 'X11-Nano · 15 layers'],
+    ['NLV',        '342 µs (Rust)'],
+    ['PEP',        '412 µs (Go)'],
+    ['NCE',        '856 µs (Node.js)'],
+    ['TXs',        b.txs],
+    ['SMS',        b.sms || 'None'],
+  ].map(([k,v]) =>
+    `<div style="display:flex;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--b1);gap:12px;">
+      <span style="font-size:10px;color:var(--t3);letter-spacing:.04em;font-weight:600;flex-shrink:0;">${k.toUpperCase()}</span>
+      <span style="font-size:11px;font-family:var(--mono);text-align:right;word-break:break-all;font-weight:500;color:var(--t1);">${v}</span>
+    </div>`
+  ).join('');
+
+  // Transactions in this block — use real user txs where available, fill remainder
+  document.getElementById('bd-tx-label').textContent = 'TRANSACTIONS IN BLOCK (' + b.txs + ')';
+  const txPool = DB.txs.slice(0, b.txs);
+  if (!txPool.length) {
+    document.getElementById('bd-tx-list').innerHTML =
+      `<div style="padding:24px 0;text-align:center;color:var(--t3);font-size:13px;">Empty block — no transactions</div>`;
+  } else {
+    document.getElementById('bd-tx-list').innerHTML = txPool.map(tx => {
+      const isOut = tx.type !== 'RECEIVE';
+      const amtC  = tx.type === 'RECEIVE' ? 'color:var(--pip)' : '';
+      const sc2   = tx.status === 'FINALIZED' ? 'sc-fin' : 'sc-pip';
+      return `<div onclick="openTxFromBlock('${tx.txId}')" style="border:1px solid var(--b1);border-radius:9px;margin-bottom:7px;padding:11px 13px;cursor:pointer;transition:opacity .08s;" onmouseenter="this.style.opacity='.75'" onmouseleave="this.style.opacity='1'">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+          <span style="font-size:11px;font-weight:700;font-family:var(--mono);color:var(--t1);">${tx.txId}</span>
+          <span class="status-chip ${sc2}" style="font-size:9px;padding:2px 7px;">${tx.status}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:11px;color:var(--t2);">${tx.type} · ${fmtTs(tx.timestamp)}</span>
+          <span style="font-size:12px;font-weight:700;font-family:var(--mono);${amtC}">${isOut?'−':'+'}${parseFloat(tx.amount).toFixed(2)} XYR</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function openTxFromBlock(txId) {
+  const tx = DB.txs.find(t => t.txId === txId);
+  if (tx) { closeBlockDetail(); go('detail', tx); }
+}
+
+function closeBlockDetail() {
+  document.getElementById('blk-detail-wrap').style.display = 'none';
+}
+
+// ─── Tab Explorer search ──────────────────────────────────────────────────────
+function tabExpSearch(val) {
+  if (!val.trim()) { renderTabExplorer(); return; }
+  const v = val.toLowerCase();
+  const filtered = DB.blocks.filter(b =>
+    String(b.num).includes(v) || b.hash.toLowerCase().includes(v)
+  );
+  renderTabExplorer(filtered.length ? filtered : DB.blocks);
+}
+
+// ─── Heartbeat countdown for explorer tab ────────────────────────────────────
+let expCountdown = 180;
+setInterval(() => {
+  expCountdown--;
+  const el = document.getElementById('te-next');
+  if (el) el.textContent = expCountdown + 's';
+  if (expCountdown <= 0) expCountdown = 180;
+}, 1000);
+
+// ─── Mini Block Explorer (History page) — kept for compatibility ──────────────
+function updateHistExplorer() { renderTabExplorer(); }
+
+// ─── Node Config Modal ────────────────────────────────────────────────────────
+function openNodeConfig() {
+  const urlEl = document.getElementById('cfg-current-url');
+  const inputEl = document.getElementById('cfg-url-input');
+  if (urlEl) urlEl.textContent = XYRON_NODE.base;
+  if (inputEl) inputEl.value = XYRON_NODE.base;
+
+  // Show live stats if online
+  if (XyronAPI.isOnline() && DB.stats) {
+    renderCfgStats(DB.stats);
+  } else if (XyronAPI.isOnline() && DB.tokenomics) {
+    renderCfgStats(DB.tokenomics);
+  }
+  document.getElementById('node-cfg-ov').classList.add('on');
+}
+
+function closeNodeConfig(e) {
+  if (e && e.target !== document.getElementById('node-cfg-ov')) return;
+  document.getElementById('node-cfg-ov').classList.remove('on');
+}
+
+function renderCfgStats(data) {
+  const wrap = document.getElementById('cfg-node-stats');
+  const rows = document.getElementById('cfg-stats-rows');
+  if (!wrap || !rows) return;
+  wrap.style.display = 'block';
+  const fields = [
+    ['Total Blocks', data.total_blocks ?? data.totalBlocks ?? DB.blocks[0]?.num ?? '—'],
+    ['Circulating',  data.circulating_supply ?? data.circulatingSupply ?? '2,140,000 XYR'],
+    ['Block Reward', (data.block_reward ?? XYRON_SEED.BLOCK_REWARD) + ' XYR'],
+    ['Block Time',   (data.block_time ?? XYRON_SEED.BLOCK_TIME) + 's'],
+    ['Node',         data.node ?? XYRON_SEED.NODE],
+    ['Latency',      XyronAPI._lastLatency ? (XyronAPI._lastLatency + ' ms') : '—'],
+  ];
+  rows.innerHTML = fields.map(([k,v])=>`
+    <div style="display:flex;justify-content:space-between;padding:7px 14px;border-bottom:1px solid var(--pip-b);font-size:12px;">
+      <span style="color:var(--pip);font-weight:500;">${k}</span>
+      <span style="font-family:var(--mono);font-weight:600;color:var(--t1);">${v}</span>
+    </div>`).join('');
+}
+
+async function testAndSaveNodeUrl() {
+  const input = document.getElementById('cfg-url-input');
+  const url = (input?.value || '').trim().replace(/\/$/, '');
+  if (!url || !url.startsWith('http')) { showToast('URL tidak valid'); return; }
+
+  const btn = document.querySelector('#node-cfg-ov [onclick="testAndSaveNodeUrl()"]');
+  if (btn) { btn.textContent = 'Testing…'; btn.style.opacity = '.6'; }
+
+  // Temporarily set URL and test
+  const old = XYRON_NODE.base;
+  XYRON_NODE.base = url;
+  XyronAPI._online = null;
+
+  const t0 = Date.now();
+  const health = await XyronAPI.health();
+  XyronAPI._lastLatency = Date.now() - t0;
+
+  if (btn) { btn.textContent = 'Connect'; btn.style.opacity = '1'; }
+
+  if (health) {
+    showToast('PIP — Node terhubung! ' + url);
+    setNodeStatus('live');
+    document.getElementById('cfg-current-url').textContent = url;
+    // Reload data from new node
+    bootXyronNode();
+    // Show stats
+    if (DB.stats || DB.tokenomics) renderCfgStats(DB.stats || DB.tokenomics);
+  } else {
+    XYRON_NODE.base = old; // revert
+    showToast('Gagal terhubung. Periksa URL & pastikan node online.');
+    setNodeStatus('offline');
+  }
+}
+
+function resetNodeUrl() {
+  sessionStorage.removeItem('xyron_node_url');
+  document.getElementById('cfg-url-input').value = XYRON_NODE.defaultUrl;
+  document.getElementById('cfg-current-url').textContent = XYRON_NODE.defaultUrl;
+  showToast('URL direset ke default');
+  bootXyronNode();
+}
+
+// ─── Dark Mode ────────────────────────────────────────────────────────────────
+let isDark = false;
+function toggleDark() {
+  isDark = !isDark;
+  document.documentElement.classList.toggle('dark', isDark);
+
+  // Swap icon: moon → sun
+  const icon = document.getElementById('dark-icon');
+  if (icon) {
+    icon.innerHTML = isDark
+      ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+      : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+  }
+  // Sync btn background
+  const btn = document.getElementById('dark-toggle');
+  if (btn) { btn.style.background = isDark ? '#1e1e1c' : 'var(--off)'; btn.style.borderColor = isDark ? '#2a2a28' : 'var(--b1)'; }
+}
+
+// ─── Security Panel Toggle ────────────────────────────────────────────────────
+function toggleSecurity() {
+  const panel = document.getElementById('sec-panel');
+  const chev = document.getElementById('sec-chev');
+  const open = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  chev.style.transform = open ? 'rotate(90deg)' : '';
+}
+
+// ─── Wallet Setup ─────────────────────────────────────────────────────────────
+// XYRON wallet: XYR- prefix + 32-char hex (simulates X11-Nano + KECCAK-256 derivation)
+let wsMode = 'create';
+let wsGenAddr = '';
+let wsGenPK = '';
+let wsPKVisible = false;
+
+function setWalletMode(mode) {
+  wsMode = mode;
+  const createBtn  = document.getElementById('wm-create');
+  const importBtn  = document.getElementById('wm-import');
+  const createPanel = document.getElementById('ws-create-panel');
+  const importPanel = document.getElementById('ws-import-panel');
+  if (mode === 'create') {
+    createBtn.style.background  = 'var(--t1)'; createBtn.style.color = 'var(--w)'; createBtn.style.border = '2px solid var(--t1)';
+    importBtn.style.background  = 'var(--w)';  importBtn.style.color = 'var(--t2)'; importBtn.style.border = '1px solid var(--b1)';
+    createPanel.style.display = 'flex';
+    importPanel.style.display = 'none';
+  } else {
+    importBtn.style.background  = 'var(--t1)'; importBtn.style.color = 'var(--w)'; importBtn.style.border = '2px solid var(--t1)';
+    createBtn.style.background  = 'var(--w)';  createBtn.style.color = 'var(--t2)'; createBtn.style.border = '1px solid var(--b1)';
+    createPanel.style.display = 'none';
+    importPanel.style.display = 'flex';
+  }
+}
+
+function xyrHash(seed) {
+  // Simulate XYRON X11-Nano address derivation (deterministic from random seed)
+  let h = seed;
+  for (let i = 0; i < 11; i++) {
+    let v = 0;
+    for (let j = 0; j < h.length; j++) v = ((v << 5) - v + h.charCodeAt(j)) | 0;
+    h = Math.abs(v).toString(16).padStart(8, '0') + h.substring(0, h.length - 8);
+  }
+  return h.replace(/[^a-f0-9]/g,'0').substring(0, 32).toUpperCase();
+}
+
+function generateWallet() {
+  const btn = document.getElementById('ws-gen-btn');
+  btn.textContent = 'Generating…';
+  btn.style.opacity = '.5';
+
+  setTimeout(() => {
+    // Generate private key: 64 hex chars (256-bit)
+    const pkArr  = new Uint8Array(32);
+    crypto.getRandomValues(pkArr);
+    const pk     = Array.from(pkArr).map(b => b.toString(16).padStart(2,'0')).join('').toUpperCase();
+
+    // Derive address from PK using simulated X11-Nano chain
+    const seed   = pk.substring(0,16);
+    const addrHex = xyrHash(seed + pk.substring(16,32));
+    const addr   = 'XYR-' + addrHex;
+
+    // X11 signature tag
+    const sigTag = 'X11_VAL_' + pk.substring(0,8);
+
+    wsGenAddr = addr;
+    wsGenPK   = pk;
+    wsPKVisible = false;
+
+    // Render address
+    document.getElementById('ws-addr-out').textContent = addr;
+
+    // Render PK (masked)
+    const pkWrap = document.getElementById('ws-pk-wrap');
+    pkWrap.style.display = 'block';
+    document.getElementById('ws-pk-out').textContent = '•'.repeat(64);
+    document.getElementById('pk-toggle-btn').textContent = 'Show';
+
+    // Render signature
+    const sigWrap = document.getElementById('ws-sig-wrap');
+    sigWrap.style.display = 'block';
+    document.getElementById('ws-sig-out').textContent = sigTag;
+
+    // ── Sync new address to Home + Profile ──────────────
+    syncActiveWallet(addr);
+
+    btn.textContent = '↻ Regenerate';
+    btn.style.opacity = '1';
+    showToast('PIP — XYRON wallet generated');
+  }, 400);
+}
+
+function togglePK() {
+  if (!wsGenPK) return;
+  wsPKVisible = !wsPKVisible;
+  document.getElementById('ws-pk-out').textContent = wsPKVisible ? wsGenPK : '•'.repeat(64);
+  document.getElementById('pk-toggle-btn').textContent = wsPKVisible ? 'Hide' : 'Show';
+}
+
+function copyWsAddr() {
+  if (!wsGenAddr) { showToast('Generate a wallet first'); return; }
+  showToast('Address copied to clipboard');
+}
+
+function copyPK() {
+  if (!wsGenPK) return;
+  showToast('Private key copied — keep it safe!');
+}
+
+function importWallet() {
+  const raw = document.getElementById('ws-import-input').value.trim();
+  if (!raw) { showToast('Paste a private key or address'); return; }
+
+  let addr = '';
+  // If it looks like a 64-char hex private key → derive address
+  if (/^[0-9a-fA-F]{64}$/.test(raw)) {
+    const pk = raw.toUpperCase();
+    addr = 'XYR-' + xyrHash(pk.substring(0,16) + pk.substring(16,32));
+  } else if (raw.startsWith('XYR-')) {
+    addr = raw.toUpperCase();
+  } else {
+    showToast('Invalid key or address format'); return;
+  }
+
+  const resEl   = document.getElementById('ws-import-result');
+  const addrEl  = document.getElementById('ws-import-addr');
+  addrEl.textContent = addr;
+  resEl.style.display = 'block';
+
+  // ── Sync imported address to Home + Profile ──────────
+  syncActiveWallet(addr);
+  showToast('PIP — Wallet imported to XYRON');
+}
+
+// ─── Block Formation Animation ────────────────────────────────────────────────
+function animateNewBlock(blockNum) {
+  // Flash stats
+  ['te-blocks','te-minted'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('stat-flash');
+    void el.offsetWidth;
+    el.classList.add('stat-flash');
+    setTimeout(() => el.classList.remove('stat-flash'), 700);
+  });
+  // Prepend new block row with animation class
+  const list = document.getElementById('tab-exp-list');
+  if (!list || activePage !== 'history') return;
+  const b = DB.blocks[0];
+  const hasTx = b.txs > 0;
+  const sc    = b.status === 'PIP' ? 'sc-pip' : 'sc-buf';
+  const dotC  = b.status === 'PIP' ? 'scd-pip' : 'scd-buf';
+  const div = document.createElement('div');
+  div.className = 'block-new';
+  div.setAttribute('onclick', `openBlockDetail(${b.num})`);
+  div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 12px;margin-bottom:6px;border:1px solid var(--b1);border-radius:10px;cursor:pointer;background:var(--w);transition:opacity .08s;';
+  div.onmouseenter = () => div.style.opacity = '.75';
+  div.onmouseleave = () => div.style.opacity = '1';
+  div.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+      <div style="width:32px;height:32px;border-radius:7px;background:var(--off);border:1px solid var(--pip-b);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--pip)" stroke-width="2"><rect x="2" y="3" width="8" height="8" rx="1"/><rect x="14" y="3" width="8" height="8" rx="1"/><rect x="2" y="13" width="8" height="8" rx="1"/><rect x="14" y="13" width="8" height="8" rx="1"/></svg>
+      </div>
+      <div style="min-width:0;">
+        <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--pip);">Block #${b.num} — NEW</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:1px;font-family:var(--mono);">${fmtTs(b.time)} · ${b.validators} validators</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;margin-left:8px;">
+      <span class="status-chip ${sc}" style="font-size:9px;padding:2px 7px;"><span class="sc-dot ${dotC}"></span>${b.status}</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:10px;color:var(--t3);font-family:var(--mono);">${b.txs} txs</span>
+        <span style="font-size:10px;font-family:var(--mono);color:${hasTx?'var(--pip)':'var(--t3)'};">${b.reward} XYR</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>`;
+  list.insertBefore(div, list.firstChild);
+  // Remove "— NEW" label after 4s
+  setTimeout(() => {
+    const t = div.querySelector('[style*="color:var(--pip)"]');
+    if (t) t.style.color = 'var(--t1)';
+    div.querySelector('[style*="color:var(--pip-b)"]');
+  }, 4000);
+}
+
+// ─── Tokenomics Modal ─────────────────────────────────────────────────────────
+const TOK_DATA = {
+  supply: {
+    title: 'Max Supply', sub: '12,614,400 XYR hard cap',
+    content: `
+      <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:16px;">XYRON has a fixed maximum supply of <strong>12,614,400 XYR</strong> — permanently hard-capped, no additional issuance is possible after this limit is reached.</div>
+      <div style="border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;margin-bottom:14px;">
+        ${[['Max Supply','12,614,400 XYR'],['Circulating','2,140,000 XYR (16.97%)'],['Remaining to mint','10,474,400 XYR'],['Burned','0 XYR'],['Locked','0 XYR']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--b1);font-size:13px;"><span style="color:var(--t3);font-weight:500;">${k}</span><span style="font-family:var(--mono);font-weight:600;">${v}</span></div>`).join('')}
+      </div>
+      <!-- Supply chart bar -->
+      <div style="margin-bottom:8px;font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--t3);">SUPPLY DISTRIBUTION</div>
+      <div style="height:28px;border-radius:8px;overflow:hidden;display:flex;margin-bottom:6px;">
+        <div style="width:16.97%;background:var(--pip);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">16.97%</div>
+        <div style="flex:1;background:var(--b1);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--t3);">83.03% remaining</div>
+      </div>
+      <div style="display:flex;gap:16px;font-size:11px;">
+        <div style="display:flex;align-items:center;gap:5px;"><div style="width:8px;height:8px;border-radius:2px;background:var(--pip);"></div><span style="color:var(--t2);">Circulating</span></div>
+        <div style="display:flex;align-items:center;gap:5px;"><div style="width:8px;height:8px;border-radius:2px;background:var(--b1);border:1px solid var(--b2);"></div><span style="color:var(--t2);">Not yet minted</span></div>
+      </div>`
+  },
+  circulating: {
+    title: 'Circulating Supply', sub: '2,140,000 XYR in circulation',
+    content: `
+      <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:16px;">Circulating supply represents XYR tokens actively in the market. Distributed equally to validators each block cycle per the XYRON tokenomics engine.</div>
+      ${[['Circulating','2,140,000 XYR'],['% of Max','16.97%'],['Minted via blocks','59 blocks × 6 XYR × avg validators'],['Growth rate','~6 XYR per 180 seconds per validator'],['Next halving at','175,200 blocks']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--b1);font-size:13px;border-radius:0;"><span style="color:var(--t3);font-weight:500;">${k}</span><span style="font-family:var(--mono);font-weight:600;">${v}</span></div>`).join('')}`
+  },
+  reward: {
+    title: 'Block Reward', sub: '6 XYR per validator per block',
+    content: `
+      <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:16px;">Each block minted via the 180-second heartbeat distributes <strong>6 XYR</strong> equally to all active validators who hold a valid X11-Nano LQV signature.</div>
+      ${[['Base reward','6 XYR per validator'],['Block time','180 seconds (3 min)'],['Daily blocks','480 blocks/day'],['Daily per validator','2,880 XYR/day (max)'],['Reward condition','Must have valid X11-Nano signature'],['Halving','Every 175,200 blocks (~1 year)'],['After 1st halving','3 XYR per validator'],['After 2nd halving','1.5 XYR per validator']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--b1);font-size:13px;"><span style="color:var(--t3);font-weight:500;">${k}</span><span style="font-family:var(--mono);font-weight:600;">${v}</span></div>`).join('')}`
+  },
+  blocktime: {
+    title: 'Block Time', sub: '180-second heartbeat',
+    content: `
+      <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:16px;">XYRON operates on a <strong>180-second heartbeat</strong> — the system automatically mints a block every 3 minutes regardless of transaction volume. Empty blocks log PIP PIP status.</div>
+      ${[['Block time','180 seconds (3 min)'],['Blocks per hour','20'],['Blocks per day','480'],['Blocks per year','175,200'],['Status (with tx)','PIP'],['Status (empty)','PIP PIP'],['Latency NLV (Rust)','342 µs'],['Latency PEP (Go)','412 µs'],['Latency NCE (Node)','856 µs'],['Total pipeline','< 1.5 ms']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--b1);font-size:13px;"><span style="color:var(--t3);font-weight:500;">${k}</span><span style="font-family:var(--mono);font-weight:600;">${v}</span></div>`).join('')}`
+  },
+  halving: {
+    title: 'Halving Cycle', sub: 'Every 175,200 blocks ≈ 1 year',
+    content: `
+      <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:16px;">XYRON implements a Bitcoin-style halving: every 175,200 blocks (~1 year), the block reward is cut in half, reducing new supply issuance until max supply is approached asymptotically.</div>
+      <!-- Halving schedule table -->
+      <div style="border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;margin-bottom:14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--off);padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em;color:var(--t3);">
+          <span>EPOCH</span><span style="text-align:center;">REWARD</span><span style="text-align:right;">YEAR</span>
+        </div>
+        ${[['1 (Now)','6 XYR','2025–2026'],['2','3 XYR','2026–2027'],['3','1.5 XYR','2027–2028'],['4','0.75 XYR','2028–2029'],['5+','→ 0','asymptotic']].map(([e,r,y],i)=>`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:10px 12px;border-top:1px solid var(--b1);font-size:12px;${i===0?'background:var(--pip-bg);':''}"><span style="color:var(--t2);font-weight:${i===0?'700':'500'};">${e}</span><span style="text-align:center;font-family:var(--mono);font-weight:700;color:${i===0?'var(--pip)':'var(--t1)'};">${r}</span><span style="text-align:right;color:var(--t3);font-family:var(--mono);">${y}</span></div>`).join('')}
+      </div>`
+  },
+  confirmations: {
+    title: 'Confirmations', sub: 'Tiered by transaction type',
+    content: `
+      <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:16px;">XYRON uses a tiered confirmation system. Higher-value or riskier transaction types require more block confirmations before they are considered FINALIZED on-chain.</div>
+      <div style="border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;margin-bottom:14px;">
+        <div style="display:grid;grid-template-columns:1fr auto auto;background:var(--off);padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.06em;color:var(--t3);">
+          <span>TYPE</span><span style="text-align:center;">CONF</span><span style="text-align:right;">TIME</span>
+        </div>
+        ${[['RECEIVE (standard)','3','~9 min','var(--pip)'],['SEND (wallet-to-wallet)','6','~18 min','var(--pip2)'],['EXCHANGE (to exchange)','9','~27 min','var(--pip3)']].map(([t,c,tm,col])=>`<div style="display:grid;grid-template-columns:1fr auto auto;padding:11px 12px;border-top:1px solid var(--b1);gap:8px;"><span style="font-size:12px;color:var(--t1);font-weight:600;">${t}</span><span style="font-size:14px;font-family:var(--mono);font-weight:700;color:${col};text-align:center;">${c}</span><span style="font-size:11px;color:var(--t3);font-family:var(--mono);text-align:right;">${tm}</span></div>`).join('')}
+      </div>
+      <div style="font-size:12px;color:var(--t3);line-height:1.6;">Each confirmation = 1 block = 180 seconds. Triple-Engine (NLV·PEP·NCE) validates each confirmation before incrementing.</div>`
+  },
+  'xyr-asset': {
+    title: 'XYRON (XYR)', sub: 'Native token · XYRON Blockchain V.2',
+    content: `
+      ${[['Balance','4,821.50 XYR'],['USD Value','$12,437.20'],['Rate','1 XYR = $2.578'],['24h Change','▲ +2.4%'],['Network','XYRON Mainnet V.2'],['Type','Native / Utility'],['Encryption','X11-Nano 15-layer'],['Validator','Active · LQV signed']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--b1);font-size:13px;"><span style="color:var(--t3);font-weight:500;">${k}</span><span style="font-family:var(--mono);font-weight:600;">${v}</span></div>`).join('')}
+      <div style="margin-top:14px;">
+        <button onclick="switchTab('assets');closeTokModal();" style="width:100%;padding:14px;background:var(--t1);color:var(--w);border:none;border-radius:var(--r);font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;">Send / Exchange XYR</button>
+      </div>`
+  },
+  'usdt-asset': {
+    title: 'Tether (USDT)', sub: 'Stablecoin · Bridged to XYRON',
+    content: `
+      ${[['Balance','243.10 USDT'],['USD Value','$243.10'],['Rate','1 USDT = $1.00'],['Peg','USD pegged'],['Network','XYRON Bridge'],['Type','Stablecoin'],['Issuer','Tether Ltd.']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--b1);font-size:13px;"><span style="color:var(--t3);font-weight:500;">${k}</span><span style="font-family:var(--mono);font-weight:600;">${v}</span></div>`).join('')}`
+  },
+};
+
+function openTokModal(key) {
+  const d = TOK_DATA[key];
+  if (!d) return;
+  document.getElementById('tokm-title').textContent   = d.title;
+  document.getElementById('tokm-sub').textContent     = d.sub;
+  document.getElementById('tokm-content').innerHTML   = d.content;
+  document.getElementById('tok-modal-ov').classList.add('on');
+}
+
+function closeTokModal(e) {
+  if (e && e.target !== document.getElementById('tok-modal-ov')) return;
+  document.getElementById('tok-modal-ov').classList.remove('on');
+}
+
+// ─── My Transaction Explorer (Profile page) ───────────────────────────────────
+function openMyTxExplorer() {
+  go('mytxexp');
+  renderMteTxList('all');
+}
+
+function renderMteTxList(filter) {
+  const txs = filter === 'all' ? DB.txs
+    : DB.txs.filter(t => t.type === filter || t.status === filter);
+  const countEl = document.getElementById('mte-count');
+  if (countEl) countEl.textContent = txs.length + ' txs';
+  const el = document.getElementById('mte-list');
+  if (!el) return;
+  if (!txs.length) { el.innerHTML = '<div style="padding:40px 0;text-align:center;color:var(--t3);font-size:13px;">No transactions</div>'; return; }
+
+  el.innerHTML = txs.map((tx, idx) => {
+    const isOut    = tx.type !== 'RECEIVE';
+    const amtColor = tx.type === 'RECEIVE' ? 'color:var(--pip)' : '';
+    const sc       = tx.status === 'FINALIZED' ? 'sc-fin' : tx.status === 'PIP' ? 'sc-pip' : 'sc-buf';
+    const dotC     = tx.status === 'FINALIZED' ? 'scd-fin' : tx.status === 'PIP' ? 'scd-pip' : 'scd-buf';
+    const blockLabel = tx.blockRef || (tx.status === 'PIP' ? 'Awaiting block…' : 'Unconfirmed');
+    const blockNum   = tx.blockRef ? DB.blocks[0]?.num - idx : (DB.blocks[0]?.num - idx) || '—';
+    const confTier   = { RECEIVE:3, SEND:6, EXCHANGE:9 };
+    const confReq    = confTier[tx.type] || 6;
+    const confDone   = tx.status === 'FINALIZED' ? confReq : tx.status === 'PIP' ? Math.min(3, confReq-1) : 0;
+    const confColor  = confDone >= confReq ? 'var(--pip)' : confDone > 0 ? 'var(--pip2)' : 'var(--b2)';
+
+    return `<div onclick="openTxFromBlock('${tx.txId}')" style="border:1px solid var(--b1);border-radius:var(--r);margin-bottom:10px;overflow:hidden;cursor:pointer;background:var(--w);transition:opacity .08s;" onmouseenter="this.style.opacity='.8'" onmouseleave="this.style.opacity='1'">
+      <!-- Block badge -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--off);border-bottom:1px solid var(--b1);">
+        <div style="display:flex;align-items:center;gap:7px;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2.5"><rect x="2" y="3" width="8" height="8" rx="1"/><rect x="14" y="3" width="8" height="8" rx="1"/><rect x="2" y="13" width="8" height="8" rx="1"/><rect x="14" y="13" width="8" height="8" rx="1"/></svg>
+          <span style="font-size:11px;font-family:var(--mono);font-weight:700;color:var(--t2);">Block #${blockNum}</span>
+          <span style="font-size:10px;color:var(--t3);font-family:var(--mono);">· ${fmtTs(tx.timestamp)}</span>
+        </div>
+        <span class="status-chip ${sc}" style="font-size:9px;padding:2px 7px;"><span class="sc-dot ${dotC}"></span>${tx.status}</span>
+      </div>
+      <!-- Main content -->
+      <div style="padding:12px 14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:9px;">
+            <div style="width:34px;height:34px;border-radius:50%;background:var(--off);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;">${txIcon(tx.type)}</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;">${cap(tx.type)}</div>
+              <div style="font-size:11px;color:var(--t3);font-family:var(--mono);">${tx.txId}</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:14px;font-weight:700;font-family:var(--mono);${amtColor}">${isOut?'−':'+'}${parseFloat(tx.amount).toFixed(2)} XYR</div>
+            <div style="font-size:11px;color:var(--t3);font-family:var(--mono);">Fee: 0.0012 XYR</div>
+          </div>
+        </div>
+        <!-- Block ref -->
+        <div style="display:flex;justify-content:space-between;padding:6px 10px;background:var(--off);border-radius:7px;margin-bottom:7px;font-size:11px;">
+          <span style="color:var(--t3);font-weight:600;letter-spacing:.04em;">BLOCK REF</span>
+          <span style="font-family:var(--mono);color:${tx.blockRef?'var(--t1)':'var(--t3)'};">${blockLabel}</span>
+        </div>
+        <!-- Confirmation bar -->
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;gap:3px;flex:1;margin-right:10px;">
+            ${Array.from({length:confReq},(_,i)=>`<div style="flex:1;height:3px;border-radius:2px;background:${i<confDone?confColor:'var(--b1)'};"></div>`).join('')}
+          </div>
+          <span style="font-size:10px;font-family:var(--mono);color:${confColor};font-weight:700;white-space:nowrap;">${confDone}/${confReq} conf</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function mteFilter(f, btn) {
+  document.querySelectorAll('#pg-mytxexp .filter-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderMteTxList(f);
+}
+
+// ─── Sync Active Wallet Address ───────────────────────────────────────────────
+// Called after generate or import — updates Home chip, Profile addr, and DB userId
+function syncActiveWallet(fullAddr) {
+  // Truncate for display: XYR-ABCDEF...XYZ8 or 0xABCD...1234
+  let display = fullAddr;
+  if (fullAddr.startsWith('XYR-') && fullAddr.length > 12) {
+    display = fullAddr.slice(0, 10) + '...' + fullAddr.slice(-4);
+  } else if (fullAddr.length > 14) {
+    display = fullAddr.slice(0, 8) + '...' + fullAddr.slice(-4);
+  }
+
+  // 1. Home addr chip
+  const homeTxt = document.getElementById('home-addr-txt');
+  if (homeTxt) {
+    homeTxt.textContent = display;
+    // Brief flash animation on chip
+    const chip = document.getElementById('home-addr-chip');
+    if (chip) {
+      chip.style.borderColor = 'var(--pip)';
+      chip.style.color = 'var(--pip)';
+      setTimeout(() => {
+        chip.style.borderColor = '';
+        chip.style.color = '';
+      }, 1800);
+    }
+  }
+
+  // 2. Profile address
+  const profTxt = document.getElementById('profile-addr-txt');
+  if (profTxt) profTxt.textContent = fullAddr.length > 24
+    ? fullAddr.slice(0, 16) + '...' + fullAddr.slice(-4)
+    : fullAddr;
+
+  // 3. Update DB active userId so new txs use new address
+  DB.activeUserId = fullAddr;
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+renderHomeTxList();
+
+// Boot: try to connect to real XYRON node
+bootXyronNode();
+
+// Live block polling — every 30s refresh blocks from real node if online
+setInterval(async () => {
+  if (!XyronAPI.isOnline()) return;
+  const res = await XyronAPI.blocks(20);
+  if (!res) return;
+  const arr = Array.isArray(res) ? res : (res.blocks ?? res.data ?? []);
+  if (arr.length) {
+    const mapped = arr.map(mapApiBlock).sort((a,b) => b.num - a.num);
+    // Check if new block arrived
+    if (mapped[0] && DB.blocks[0] && mapped[0].num > DB.blocks[0].num) {
+      DB.blocks = mapped;
+      if (activePage === 'history') animateNewBlock(mapped[0].num);
+    } else {
+      DB.blocks = mapped;
+    }
+    syncChainStats();
+    if (activePage === 'history') renderTabExplorer();
+  }
+}, 30000);
+
+// Local heartbeat counter (180s) — still runs when node is offline
+let heartbeatSec = 180;
+setInterval(()=>{
+  heartbeatSec--;
+  const nextEl = document.getElementById('te-next');
+  if (nextEl) nextEl.textContent = heartbeatSec + 's';
+  if(heartbeatSec<=0){
+    heartbeatSec=180;
+    // Only mint local block if node is offline
+    if (!XyronAPI.isOnline()) {
+      const b = DB.blocks[0];
+      const newBlock = {
+        num: b.num+1,
+        hash:'0x'+Math.random().toString(16).substr(2,5).toUpperCase()+'...'+Math.random().toString(16).substr(2,3).toUpperCase(),
+        txs: Math.floor(Math.random()*5),
+        validators: 3+Math.floor(Math.random()*4),
+        reward: XYRON_SEED.BLOCK_REWARD,
+        time: new Date().toISOString(),
+        status: Math.random()>.2?'PIP':'PIP PIP',
+        size: (Math.random()*2+.5).toFixed(2)+' KB',
+        nonce: Math.floor(Math.random()*999999),
+      };
+      DB.blocks.unshift(newBlock);
+      if(DB.blocks.length>25) DB.blocks.pop();
+      if(activePage==='history') animateNewBlock(newBlock.num);
+      updateHistExplorer();
+      syncChainStats();
+    }
+  }
+},1000);
+</script>
+</body>
+</html>

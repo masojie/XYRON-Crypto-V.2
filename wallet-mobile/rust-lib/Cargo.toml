@@ -13,6 +13,9 @@ sha2 = "0.10"
 rand = "0.8"
 bs58 = "0.5"
 ripemd = "0.1"
+hex = "0.4"
+pbkdf2 = "0.12"
+hmac = "0.12"
 
 [dev-dependencies]
 hex = "0.4"

@@ -1,0 +1,10 @@
+/data/data/com.termux/files/home/XYRON-Crypto-V.2/wallet-mobile/rust-lib/target/release/deps/bs58-eea9678889cf9e5e.d: /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/lib.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/alphabet.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/decode.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/encode.rs
+
+/data/data/com.termux/files/home/XYRON-Crypto-V.2/wallet-mobile/rust-lib/target/release/deps/libbs58-eea9678889cf9e5e.rlib: /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/lib.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/alphabet.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/decode.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/encode.rs
+
+/data/data/com.termux/files/home/XYRON-Crypto-V.2/wallet-mobile/rust-lib/target/release/deps/libbs58-eea9678889cf9e5e.rmeta: /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/lib.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/alphabet.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/decode.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/encode.rs
+
+/data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/lib.rs:
+/data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/alphabet.rs:
+/data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/decode.rs:
+/data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bs58-0.5.1/src/encode.rs:

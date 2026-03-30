@@ -1,0 +1,12 @@
+/data/data/com.termux/files/home/XYRON-Crypto-V.2/wallet-mobile/rust-lib/target/debug/deps/serde-c20a821cec20f9dd.d: /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /data/data/com.termux/files/home/XYRON-Crypto-V.2/wallet-mobile/rust-lib/target/debug/build/serde-0fed8953536769b5/out/private.rs
+
+/data/data/com.termux/files/home/XYRON-Crypto-V.2/wallet-mobile/rust-lib/target/debug/deps/libserde-c20a821cec20f9dd.rmeta: /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /data/data/com.termux/files/home/XYRON-Crypto-V.2/wallet-mobile/rust-lib/target/debug/build/serde-0fed8953536769b5/out/private.rs
+
+/data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/data/data/com.termux/files/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/data/data/com.termux/files/home/XYRON-Crypto-V.2/wallet-mobile/rust-lib/target/debug/build/serde-0fed8953536769b5/out/private.rs:
+
+# env-dep:OUT_DIR=/data/data/com.termux/files/home/XYRON-Crypto-V.2/wallet-mobile/rust-lib/target/debug/build/serde-0fed8953536769b5/out

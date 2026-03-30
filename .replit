@@ -1,20 +1,47 @@
-run = "bash start.sh"
+modules = ["nodejs-24", "python-3.11"]
 
-[env]
-XYRON_MODE = "production"
-NODE_ENV = "production"
-RUST_LOG = "info"
-GO111MODULE = "on"
-PORT = "3000"
-RUST_SOCKET = "/tmp/xyron-core.sock"
-GO_SOCKET = "/tmp/xyron-go.sock"
-BLOCK_TIME = "180000"
-MAX_SUPPLY = "12614400"
-INITIAL_REWARD = "36"
-HALVING_INTERVAL = "175200"
+[[artifacts]]
+id = "artifacts/api-server"
 
-[packager]
-language = "nodejs"
+[[artifacts]]
+id = "artifacts/mockup-sandbox"
 
-[nix]
-channel = "stable-23_11"
+[deployment]
+router = "application"
+deploymentTarget = "autoscale"
+
+[deployment.postBuild]
+args = ["pnpm", "store", "prune"]
+env = { "CI" = "true" }
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=23996 BASE_PATH=/ pnpm --filter @workspace/xyron-wallet run dev"
+waitForPort = 23996
+
+[agent]
+stack = "PNPM_WORKSPACE"
+expertMode = true
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000

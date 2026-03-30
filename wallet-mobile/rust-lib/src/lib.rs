@@ -4,8 +4,9 @@ use sha2::{Sha256, Digest};
 use rand::Rng;
 use std::ptr;
 use ripemd::Ripemd160;
+use std::ffi::CStr;
+use std::os::raw::c_char;
 
-// ========== GENERATE MNEMONIC ==========
 #[no_mangle]
 pub extern "C" fn generate_mnemonic(
     out_ptr: *mut u8,
@@ -26,7 +27,6 @@ pub extern "C" fn generate_mnemonic(
     true
 }
 
-// ========== VALIDATE MNEMONIC ==========
 #[no_mangle]
 pub extern "C" fn validate_mnemonic(
     mnemonic_ptr: *const u8,
@@ -38,7 +38,6 @@ pub extern "C" fn validate_mnemonic(
     Mnemonic::parse_in_normalized(Language::English, mnemonic_str).is_ok()
 }
 
-// ========== DERIVE KEYPAIR DARI MNEMONIC ==========
 #[no_mangle]
 pub extern "C" fn derive_keypair(
     mnemonic_ptr: *const u8,
@@ -56,7 +55,6 @@ pub extern "C" fn derive_keypair(
     };
     
     let seed = mnemonic.to_seed("");
-    
     let mut hasher = Sha256::new();
     hasher.update(&seed);
     let hash = hasher.finalize();
@@ -78,7 +76,6 @@ pub extern "C" fn derive_keypair(
     true
 }
 
-// ========== DERIVE ADDRESS (Base58Check) ==========
 #[no_mangle]
 pub extern "C" fn derive_address(
     pubkey_ptr: *const u8,
@@ -90,24 +87,15 @@ pub extern "C" fn derive_address(
         std::slice::from_raw_parts(pubkey_ptr, pubkey_len)
     };
     
-    // SHA256 dari public key
     let sha256 = Sha256::digest(pubkey_bytes);
-    
-    // RIPEMD160 dari SHA256 pakai crate ripemd
     let mut hasher = Ripemd160::new();
     hasher.update(&sha256);
     let ripemd160 = hasher.finalize();
     
-    // Tambahkan prefix (0x00 untuk mainnet)
     let mut payload = vec![0x00];
     payload.extend_from_slice(&ripemd160);
-    
-    // Double SHA256 untuk checksum
     let checksum = Sha256::digest(&Sha256::digest(&payload));
-    let checksum_bytes = &checksum[..4];
-    payload.extend_from_slice(checksum_bytes);
-    
-    // Base58 encode
+    payload.extend_from_slice(&checksum[..4]);
     let address = bs58::encode(payload).into_string();
     let bytes = address.as_bytes();
     
@@ -118,7 +106,6 @@ pub extern "C" fn derive_address(
     true
 }
 
-// ========== SIGN TRANSACTION ==========
 #[no_mangle]
 pub extern "C" fn sign_transaction(
     privkey_ptr: *const u8,
@@ -157,3 +144,149 @@ pub extern "C" fn sign_transaction(
     }
     true
 }
+
+#[no_mangle]
+pub extern "C" fn save_wallet_to_file(
+    mnemonic_ptr: *const u8,
+    mnemonic_len: usize,
+    pin_ptr: *const u8,
+    pin_len: usize,
+    file_path_ptr: *const c_char,
+) -> bool {
+    use std::fs::File;
+    use std::io::Write;
+    use hex;
+    
+    let mnemonic_str = unsafe {
+        std::str::from_utf8(std::slice::from_raw_parts(mnemonic_ptr, mnemonic_len)).unwrap()
+    };
+    
+    let mnemonic = match Mnemonic::parse_in_normalized(Language::English, mnemonic_str) {
+        Ok(m) => m,
+        Err(_) => return false,
+    };
+    
+    let seed = mnemonic.to_seed("");
+    let mut hasher = Sha256::new();
+    hasher.update(&seed);
+    let hash = hasher.finalize();
+    
+    let secp = Secp256k1::new();
+    let secret_key = match SecretKey::from_slice(&hash[..32]) {
+        Ok(sk) => sk,
+        Err(_) => return false,
+    };
+    let public_key = PublicKey::from_secret_key(&secp, &secret_key);
+    let pubkey_bytes = public_key.serialize_uncompressed();
+    let privkey_bytes = secret_key.secret_bytes();
+    
+    let pin_bytes = unsafe {
+        std::slice::from_raw_parts(pin_ptr, pin_len)
+    };
+    
+    let mut salt = [0u8; 16];
+    rand::thread_rng().fill(&mut salt);
+    
+    let mut derived_key = [0u8; 32];
+    let _ = pbkdf2::pbkdf2::<hmac::Hmac<Sha256>>(pin_bytes, &salt, 10000, &mut derived_key);
+    
+    let mut encrypted_privkey = privkey_bytes.to_vec();
+    for i in 0..encrypted_privkey.len() {
+        encrypted_privkey[i] ^= derived_key[i % derived_key.len()];
+    }
+    
+    let file_path = unsafe {
+        CStr::from_ptr(file_path_ptr).to_str().unwrap()
+    };
+    
+    let data = format!(
+        "XYRON_WALLET_V1\n{}\n{}\n{}\n{}\n",
+        hex::encode(&salt),
+        hex::encode(&encrypted_privkey),
+        hex::encode(&pubkey_bytes),
+        hex::encode(mnemonic_str.as_bytes())
+    );
+    
+    let mut file = match File::create(file_path) {
+        Ok(f) => f,
+        Err(_) => return false,
+    };
+    
+    match file.write_all(data.as_bytes()) {
+        Ok(_) => true,
+        Err(_) => false,
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn load_wallet_from_file(
+    file_path_ptr: *const c_char,
+    pin_ptr: *const u8,
+    pin_len: usize,
+    out_mnemonic_ptr: *mut u8,
+    out_mnemonic_len: *mut usize,
+) -> bool {
+    use std::fs;
+    use hex;
+    
+    let file_path = unsafe {
+        CStr::from_ptr(file_path_ptr).to_str().unwrap()
+    };
+    
+    let content = match fs::read_to_string(file_path) {
+        Ok(c) => c,
+        Err(_) => return false,
+    };
+    
+    let lines: Vec<&str> = content.lines().collect();
+    if lines.len() < 5 {
+        return false;
+    }
+    
+    let salt = match hex::decode(lines[1]) {
+        Ok(s) => s,
+        Err(_) => return false,
+    };
+    let encrypted_privkey = match hex::decode(lines[2]) {
+        Ok(e) => e,
+        Err(_) => return false,
+    };
+    let stored_pubkey = match hex::decode(lines[3]) {
+        Ok(p) => p,
+        Err(_) => return false,
+    };
+    let stored_mnemonic = match hex::decode(lines[4]) {
+        Ok(m) => m,
+        Err(_) => return false,
+    };
+    
+    let pin_bytes = unsafe {
+        std::slice::from_raw_parts(pin_ptr, pin_len)
+    };
+    
+    let mut derived_key = [0u8; 32];
+    let _ = pbkdf2::pbkdf2::<hmac::Hmac<Sha256>>(pin_bytes, &salt, 10000, &mut derived_key);
+    
+    let mut decrypted_privkey = encrypted_privkey.clone();
+    for i in 0..decrypted_privkey.len() {
+        decrypted_privkey[i] ^= derived_key[i % derived_key.len()];
+    }
+    
+    let secp = Secp256k1::new();
+    let secret_key = match SecretKey::from_slice(&decrypted_privkey) {
+        Ok(sk) => sk,
+        Err(_) => return false,
+    };
+    let public_key = PublicKey::from_secret_key(&secp, &secret_key);
+    let pubkey_bytes = public_key.serialize_uncompressed();
+    
+    if pubkey_bytes != stored_pubkey.as_slice() {
+        return false;
+    }
+    
+    unsafe {
+        *out_mnemonic_len = stored_mnemonic.len();
+        ptr::copy_nonoverlapping(stored_mnemonic.as_ptr(), out_mnemonic_ptr, stored_mnemonic.len());
+    }
+    true
+        }
