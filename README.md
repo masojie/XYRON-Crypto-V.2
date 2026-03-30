@@ -145,12 +145,10 @@ POST /ai/army/patrol Panggil patroli AI Army
 POST /ai/replace Ganti AI yang dipecat (agent_id, new_pin)
 
 Semua endpoint mengembalikan JSON. Contoh:
-
-```bash
 curl -X POST http://localhost:3000/wallet/create \
   -H "Content-Type: application/json" \
   -d '{"user_id":"alice","pin":"1234"}'
-```
+
 
 ---
 
