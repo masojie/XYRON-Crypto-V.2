@@ -96,8 +96,12 @@
 - Rust (cargo)
 - Linux / macOS (Unix socket)
 
+# XYRON Blockchain — Quick Start
+
+## 🚀 Instalasi & Menjalankan
+
 ```bash
-# 1. Clone repositori
+# 1. Clone repository
 git clone https://github.com/xyron/xyron-blockchain.git
 cd xyron-blockchain
 
@@ -117,8 +121,7 @@ cargo run --release
 # 5. Jalankan Node.js gateway (terminal 2)
 cd server-node
 node server.js
-Akses API di http://localhost:3000.
-Rust core akan mendaftarkan 5 AI worker awal dan melakukan bootstrap genesis.
+
 
 ---
 
