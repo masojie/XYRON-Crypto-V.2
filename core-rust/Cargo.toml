@@ -1,0 +1,56 @@
+[package]
+name = "xyron-core"
+version = "2.1.0"
+edition = "2021"
+description = "XYRON Blockchain Core — X11-Nano Dynamic Shield, Triple-Engine Validation, AI Governance"
+
+[[bin]]
+name = "xyron-core"
+path = "src/main.rs"
+
+[dependencies]
+# Hash algorithms — X11-Nano 11-15 layer
+blake3       = "1.5"
+groestl      = "0.10"
+sha2         = "0.10"
+sha3         = "0.10"
+ripemd       = "0.1"
+whirlpool    = "0.10"
+blake2       = "0.10"
+streebog     = "0.10"
+sm3          = "0.4"
+
+# Parallel hashing — multi-core
+rayon        = "1.8"
+
+# Smart compression — Nano-Tech
+zstd         = "0.13"
+
+# AES-256-GCM enkripsi
+aes-gcm      = "0.10"
+
+# Ed25519 — LQV signature
+ed25519-dalek = "1.0"
+
+# secp256k1 — wallet keypair
+secp256k1    = { version = "0.27", features = ["rand", "recovery"] }
+
+# Address encoding
+bs58         = "0.5"
+
+# Utility
+rand         = "0.8"
+hex          = "0.4"
+serde        = { version = "1.0", features = ["derive"] }
+serde_json   = "1.0"
+chrono       = { version = "0.4", features = ["serde"] }
+tokio        = { version = "1", features = ["full"] }
+uuid         = { version = "1.6", features = ["v4"] }
+
+[dev-dependencies]
+hex = "0.4"
+
+[profile.release]
+opt-level    = 3
+lto          = true
+codegen-units = 1

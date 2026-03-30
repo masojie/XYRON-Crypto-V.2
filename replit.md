@@ -21,19 +21,42 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 ```text
 artifacts-monorepo/
 ├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
+│   ├── api-server/         # Express API server
+│   └── xyron-wallet/       # XYRON Wallet frontend (React + Vite)
+├── core-rust/              # XYRON Blockchain Core (Rust)
+│   ├── Cargo.toml          # Rust dependencies (secp256k1, ed25519, sha2, aes-gcm, rayon, zstd, etc.)
+│   └── src/
+│       ├── main.rs         # Entry point + Unix socket server + Triple-Engine handler
+│       ├── x11_nano.rs     # X11-Nano Dynamic Shield (11-15 layers, parallel hashing)
+│       ├── lqv.rs          # Logic-Quantum Verification (Ed25519 signatures)
+│       ├── pep.rs          # Parallel Echo-Pulse (2/3 consensus)
+│       ├── nce.rs          # Nexus Community Engine (fingerprint validation)
+│       ├── vault.rs        # Encrypted key vault (secp256k1 + AES-256-GCM)
+│       ├── reward.rs       # Tokenomics + block reward schedule
+│       └── ai_governance.rs# AI Master governance (max 21, win rate, memory inheritance)
+├── server-node/            # XYRON API Gateway (Node.js + Express)
+│   └── server.js           # REST API bridge → Rust core via Unix socket /tmp/xyron-go.sock
 ├── lib/                    # Shared libraries
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
 │   ├── api-client-react/   # Generated React Query hooks
 │   ├── api-zod/            # Generated Zod schemas from OpenAPI
 │   └── db/                 # Drizzle ORM schema + DB connection
 ├── scripts/                # Utility scripts (single workspace package)
-│   └── src/                # Individual .ts scripts, run via `pnpm --filter @workspace/scripts run <script>`
-├── pnpm-workspace.yaml     # pnpm workspace (artifacts/*, lib/*, lib/integrations/*, scripts)
-├── tsconfig.base.json      # Shared TS options (composite, bundler resolution, es2022)
+├── pnpm-workspace.yaml     # pnpm workspace
+├── tsconfig.base.json      # Shared TS options
 ├── tsconfig.json           # Root TS project references
 └── package.json            # Root package with hoisted devDeps
 ```
+
+## XYRON Blockchain Specs
+
+- **Max Supply**: 6,657,700 XYR | 1 XYR = 1,000,000 nIZ
+- **Block time**: 180 detik | **Burn**: 6% per tx | **Lock**: 4% per tx
+- **X11-Nano**: 11 layer normal → 13 elevated → 15 critical (dynamic scaling)
+- **Triple-Engine**: LQV (Ed25519) → PEP (2/3 consensus) → NCE (fingerprint)
+- **AI Workers**: max 21 | win rate min 45% | memory inheritance saat replace
+- **Unix socket**: Rust core `/tmp/xyron-core.sock` | Node.js → Rust `/tmp/xyron-go.sock`
+- **GitHub**: https://github.com/masojie/XYRON-Crypto-V.2
 
 ## TypeScript & Composite Projects
 
