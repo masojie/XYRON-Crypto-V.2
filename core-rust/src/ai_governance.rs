@@ -119,7 +119,7 @@ impl AIAgent {
             .as_secs();
         Self {
             id: id.to_string(),
-            wallet_address: wallet_address.to_string(),
+            wallet_address,
             tier: AgentTier::Active,
             violations: 0,
             tx_count_today: 0,
@@ -427,4 +427,4 @@ mod tests {
         let flagged = gov.army_patrol();
         assert!(!flagged.is_empty());
     }
-}
+            }
