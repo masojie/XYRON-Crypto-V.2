@@ -230,4 +230,4 @@ mod tests {
     fn test_genesis_ai_fund() {
         assert_eq!(GENESIS_AI_FUND_NIZ, 100 * NIZ_PER_XYR);
     }
-}
+            }
