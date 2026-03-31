@@ -56,5 +56,5 @@ core-rust/target/
 *.lock
 .env
 logs/
-history/
+# history/ — blockchain data, jangan di-ignore
 *.sock
